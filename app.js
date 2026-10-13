@@ -800,6 +800,30 @@
   /* ---------------------------------------------------------
      نما: خانه
      --------------------------------------------------------- */
+  /* ---------------------------------------------------------
+     کردیت KarenSoft — نوار پایین فوتر (با آرت‌ورک اصلی لوگو)
+     --------------------------------------------------------- */
+  function karenCreditHTML() {
+    return `
+      <a class="karen-credit" href="https://www.karen-soft.ir" target="_blank" rel="noopener noreferrer" dir="ltr"
+         aria-label="طراحی و توسعه توسط کارن سافت — karen-soft.ir">
+        <span class="karen-credit-mark" aria-hidden="true">
+          <img src="images/karensoft/mark.png" alt="" width="256" height="256">
+          <span class="karen-orbit"></span>
+          <span class="karen-orbit karen-orbit-2"></span>
+        </span>
+        <span class="karen-credit-body">
+          <span class="karen-credit-label">Designed &amp; Developed by</span>
+          <span class="karen-credit-words">
+            <img class="karen-word-en" src="images/karensoft/wordmark-en.png" alt="Karensoft" width="410" height="48">
+            <span class="karen-credit-sep" aria-hidden="true">|</span>
+            <img class="karen-word-fa" src="images/karensoft/wordmark-fa.png" alt="کارن سافت" width="383" height="96">
+            <span class="karen-shine" aria-hidden="true"></span>
+          </span>
+        </span>
+      </a>`;
+  }
+
   function currentLessonId() {
     if (state.progress.last && findLesson(state.progress.last)) return state.progress.last;
     return 'm1';
@@ -925,7 +949,10 @@
         </section>
 
         <footer class="foot-note">
-          <span>مدرسه‌ی من · آموزش ریاضی، فارسی و علوم پایه‌ی اول</span>
+          <span class="foot-group">
+            <span>مدرسه‌ی من · آموزش ریاضی، فارسی و علوم پایه‌ی اول</span>
+            ${karenCreditHTML()}
+          </span>
           <span>ساخته‌شده برای یادگیری شاد و آرام</span>
         </footer>
       </div>`;
@@ -992,7 +1019,10 @@
         </section>
 
         <footer class="foot-note">
-          <span>مدرسه‌ی من · سینمای حروف</span>
+          <span class="foot-group">
+            <span>مدرسه‌ی من · سینمای حروف</span>
+            ${karenCreditHTML()}
+          </span>
           <span>شعر و موزیک کودکانه برای یادگیری الفبا</span>
         </footer>
       </div>`;
@@ -1041,7 +1071,10 @@
         </header>
         <div class="lesson-grid">${cards}</div>
         <footer class="foot-note">
-          <span>${faDigits(lessons.length)} درس · ${s.tagline}</span>
+          <span class="foot-group">
+            <span>${faDigits(lessons.length)} درس · ${s.tagline}</span>
+            ${karenCreditHTML()}
+          </span>
           <button class="btn btn-quiet" data-act="adult">${icon('wrench')} ورود بزرگ‌ترها</button>
         </footer>
       </div>`;
@@ -1720,7 +1753,10 @@
         </div>
 
         <footer class="foot-note">
-          <span>پیشرفت روی همین دستگاه ذخیره می‌شود.</span>
+          <span class="foot-group">
+            <span>پیشرفت روی همین دستگاه ذخیره می‌شود.</span>
+            ${karenCreditHTML()}
+          </span>
           <button class="btn btn-quiet" data-act="adult">${icon('wrench')} ورود بزرگ‌ترها</button>
         </footer>
       </div>`;
