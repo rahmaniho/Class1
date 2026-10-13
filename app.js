@@ -743,6 +743,7 @@
     if (parts[0] === 'games') return { view: 'games' };
     if (parts[0] === 'game') return { view: 'game', gameId: parts[1] };
     if (parts[0] === 'progress') return { view: 'progress' };
+    if (parts[0] === 'cinema') return { view: 'cinema' };
     return { view: 'home' };
   }
 
@@ -900,6 +901,21 @@
 
         <section class="section">${strip}</section>
 
+        <section class="section" aria-label="سینمای حروف">
+          <div class="section-head">
+            <h2 class="t-heading">سینمای حروف</h2>
+            <button class="btn btn-quiet" data-act="nav" data-hash="#/cinema">تماشای انیمیشن</button>
+          </div>
+          <button class="cinema-banner reveal" data-act="nav" data-hash="#/cinema" aria-label="تماشای انیمیشن ماجرای حروف">
+            <img src="videos/majara-horof-poster.jpg" alt="ماجرای حروف — سحر کوچولو و حروف الفبا" loading="lazy">
+            <span class="cinema-copy">
+              <span class="cinema-kicker">${icon('play')} تماشا کن</span>
+              <span class="cinema-title">ماجرای حروف</span>
+              <span class="cinema-desc">انیمیشن شعر و موزیک کودکانه برای یادگیری الفبا</span>
+            </span>
+          </button>
+        </section>
+
         <section class="section" aria-label="فعالیت‌ها">
           <div class="section-head">
             <h2 class="t-heading">بازی و تمرین</h2>
@@ -911,6 +927,73 @@
         <footer class="foot-note">
           <span>مدرسه‌ی من · آموزش ریاضی، فارسی و علوم پایه‌ی اول</span>
           <span>ساخته‌شده برای یادگیری شاد و آرام</span>
+        </footer>
+      </div>`;
+  }
+
+  /* ---------------------------------------------------------
+     نما: سینمای حروف (ویدیوی انیمیشن)
+     --------------------------------------------------------- */
+  function renderCinema() {
+    return `
+      <div class="main-inner">
+        <section class="section" aria-label="سینمای حروف">
+          <div class="section-head">
+            <h1 class="t-heading" style="font-size:30px">${icon('play', 'h-ico')} سینمای حروف</h1>
+            <button class="btn btn-quiet" data-act="nav" data-hash="#/">${icon('arrow-left')} بازگشت به خانه</button>
+          </div>
+          <p class="t-label" style="margin-bottom:18px">انیمیشن «ماجرای حروف»؛ شعر و موزیک کودکانه برای یادگیری الفبا · مدت: ۱:۲۹</p>
+          <figure class="video-frame">
+            <video controls playsinline preload="metadata" poster="videos/majara-horof-poster.jpg">
+              <source src="videos/majara-horof.mp4" type="video/mp4">
+              مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.
+            </video>
+          </figure>
+          <div class="stage-actions" style="margin-top:18px">
+            <a class="btn btn-primary" href="videos/majara-horof.mp4" download>${icon('play')} دانلود ویدیو</a>
+            <button class="btn btn-secondary" data-act="nav" data-hash="#/lessons/farsi">${icon('book')} تمرین حروف</button>
+          </div>
+        </section>
+
+        <section class="section" aria-label="شعر داستان">
+          <div class="section-head">
+            <h2 class="t-heading">شعر ماجرای حروف</h2>
+            <p class="t-label">هر بخش از شعر را جداگانه بشنو</p>
+          </div>
+          <div class="poem-row">
+            ${[
+              { n: 1, label: 'سحر بیدار می‌شود', text: 'سحر کوچولو از خواب پاشد و گفت: بیا، بیا، بیایید ببینیم!' },
+              { n: 2, label: 'آفتاب، برف، پرواز، توپ', text: 'حرف آ آمد و آفتاب خندید، ب و پ آمدند و توپ قرمزش را انداخت.' },
+              { n: 3, label: 'ث، جیم، چه و دوستان', text: 'ث و جیم و چه آواز خواندند، ح و خ و دال رقصیدند.' },
+              { n: 4, label: 'رقص حروف و شب‌به‌خیر', text: 'ر و ز و ژ رقصیدند و الفبا خوابید زیر نور ماه.' }
+            ].map(p => `
+              <button class="audio-btn" data-act="speak" data-text="${escapeHtml(p.text)}" data-audio="stories/poem-${p.n}" aria-label="شنیدن ${escapeHtml(p.label)}">
+                ${icon('speaker')} <span>${faDigits(p.n)} · ${p.label}</span>
+              </button>`).join('')}
+          </div>
+        </section>
+
+        <section class="section" aria-label="درباره‌ی داستان">
+          <div class="section-head">
+            <h2 class="t-heading">داستان از چه قرار است؟</h2>
+          </div>
+          <div class="activity-row">
+            ${[
+              { title: 'سحر و ستاره', desc: 'سحر کوچولو با ستاره‌ی خندان همراه می‌شود تا حروف را پیدا کند.', art: 'seasons' },
+              { title: 'شعر آموزشی', desc: 'شعر کودکانه «آفتاب، برف، پرواز، توپ» حرف‌ها را به خاطرماندنی می‌کند.', art: 'lettercard' },
+              { title: 'موزیک ملایم', desc: 'آهنگ لالایی با حال‌وهوای موسیقی ایرانی، همراه آرام کودکان.', art: 'sound' }
+            ].map(a => `
+              <div class="act-card reveal">
+                <div class="act-ill">${bigArtSVG(a.art)}</div>
+                <div class="act-title">${a.title}</div>
+                <div class="act-desc">${a.desc}</div>
+              </div>`).join('')}
+          </div>
+        </section>
+
+        <footer class="foot-note">
+          <span>مدرسه‌ی من · سینمای حروف</span>
+          <span>شعر و موزیک کودکانه برای یادگیری الفبا</span>
         </footer>
       </div>`;
   }
@@ -1754,6 +1837,8 @@
     } else if (r.view === 'progress') {
       activeNav = 'progress';
       html = renderProgress();
+    } else if (r.view === 'cinema') {
+      html = renderCinema();
     }
 
     app.innerHTML = `
