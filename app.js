@@ -700,11 +700,11 @@
 
   const audioCache = {};
 
-  function playSound(text) {
+  function playSound(text, directRel) {
     const raw = String(text || '').trim();
-    if (!raw) return false;
+    if (!raw && !directRel) return false;
     const key = raw.replace(/\u200c/g, ''); /* حذف نیم‌فاصله برای جست‌وجوی نگاشت */
-    const rel = AUDIO_FILES[key] || AUDIO_FILES[raw];
+    const rel = directRel || AUDIO_FILES[key] || AUDIO_FILES[raw];
     if (rel && typeof Audio !== 'undefined') {
       try {
         if (!audioCache[rel]) {
@@ -1095,7 +1095,9 @@
         return `<div class="teach-figs">${tiles}</div><div class="teach-figs">${words}</div>`;
       }
       if (t.kind === 'story') {
-        return `<div class="story-text"><strong>${escapeHtml(t.title)}</strong><br>${escapeHtml(t.text)}</div>`;
+        return `<div class="story-text"><strong>${escapeHtml(t.title)}</strong><br>${escapeHtml(t.text)}
+          ${t.audio ? `<div style="margin-top:12px"><button class="audio-btn" data-act="speak" data-text="${escapeHtml(t.text)}" data-audio="${escapeHtml(t.audio)}" aria-label="شنیدن داستان ${escapeHtml(t.title)}">${icon('speaker')} <span>شنیدن داستان</span></button></div>` : ''}
+        </div>`;
       }
       if (t.kind === 'equation') {
         return `<div class="center-stage">${equationSVG(t.a, t.op, t.b)}<p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
@@ -1868,7 +1870,7 @@
         render();
         break;
       case 'speak': {
-        const ok = playSound(t.dataset.text || '');
+        const ok = playSound(t.dataset.text || '', t.dataset.audio || '');
         if (!ok) {
           const label = t.querySelector('span');
           if (label) {
