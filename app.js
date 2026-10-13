@@ -669,6 +669,69 @@
   }
 
   /* ---------------------------------------------------------
+     صداهای ضبط‌شده‌ی حروف و کلمه‌ها
+     اول فایل صوتی پخش می‌شود؛ اگر نبود، گفتار مرورگر جایگزین است
+     --------------------------------------------------------- */
+  const AUDIO_FILES = {
+    /* حروف الفبا */
+    'آ': 'letters/alef', 'ب': 'letters/be', 'پ': 'letters/pe', 'ت': 'letters/te',
+    'ث': 'letters/the', 'ج': 'letters/jim', 'چ': 'letters/che', 'ح': 'letters/ha',
+    'خ': 'letters/kha', 'د': 'letters/dal', 'ذ': 'letters/zal', 'ر': 'letters/re',
+    'ز': 'letters/ze', 'ژ': 'letters/zhe', 'س': 'letters/sin', 'ش': 'letters/shin', 'ص': 'letters/sad',
+    'ض': 'letters/zad', 'ط': 'letters/ta', 'ظ': 'letters/za', 'ع': 'letters/ain',
+    'غ': 'letters/ghain', 'ف': 'letters/fe', 'ق': 'letters/qaf', 'ک': 'letters/kaf',
+    'گ': 'letters/gaf', 'ل': 'letters/lam', 'م': 'letters/mim', 'ن': 'letters/nun',
+    'و': 'letters/vav', 'ه': 'letters/heh', 'هـ': 'letters/heh', 'ی': 'letters/yeh',
+    /* کلمه‌های درس‌ها */
+    'آب': 'words/ab', 'برف': 'words/barf', 'پرواز': 'words/parvaz', 'توپ': 'words/toop',
+    'ثوب': 'words/soob', 'اثر': 'words/asar', 'جوجه': 'words/joojeh', 'چتر': 'words/chatr',
+    'جعبه': 'words/jobeh', 'چرخ': 'words/charkh', 'حلزون': 'words/halazoon', 'خورشید': 'words/khorshid',
+    'حبه': 'words/habbeh', 'خانه': 'words/khaneh', 'درخت': 'words/derakht', 'ذره': 'words/zarreh',
+    'دست': 'words/dast', 'بذر': 'words/bazar', 'رنگینکمان': 'words/ranginakaman', 'زنبور': 'words/zanboor',
+    'روز': 'words/rooz', 'زیر': 'words/zir', 'ژاکت': 'words/jaket', 'سیب': 'words/sib', 'شمع': 'words/sham',
+    'صدا': 'words/seda', 'باغ': 'words/bagh', 'طوطی': 'words/toti', 'ظرف': 'words/zarf',
+    'عسل': 'words/asal', 'غروب': 'words/ghorub', 'فیل': 'words/fil', 'قورباغه': 'words/ghorbagheh',
+    'کتاب': 'words/ketab', 'گربه': 'words/gorbeh', 'لکلک': 'words/laklak', 'ماهی': 'words/mahi',
+    'نان': 'words/nan', 'والیبال': 'words/valeyball', 'هندوانه': 'words/hendevaneh', 'یخ': 'words/yakh',
+    'هویج': 'words/havij', 'یادگیری': 'words/yadgiri', 'گنجشک': 'words/gonjeshk',
+    'خانواده': 'words/khanevadeh', 'صبحانه': 'words/sobhaneh', 'رنگین‌کمان': 'words/ranginakaman',
+    'بزرگسال': 'words/bozorgsal', 'مدرسه': 'words/madrese', 'الگو': 'words/elgoo'
+  };
+
+  const audioCache = {};
+
+  function playSound(text, directRel) {
+    const raw = String(text || '').trim();
+    if (!raw && !directRel) return false;
+    const key = raw.replace(/\u200c/g, ''); /* حذف نیم‌فاصله برای جست‌وجوی نگاشت */
+    const rel = directRel || AUDIO_FILES[key] || AUDIO_FILES[raw];
+    if (rel && typeof Audio !== 'undefined') {
+      try {
+        if (!audioCache[rel]) {
+          audioCache[rel] = new Audio('audio/' + rel + '.mp3');
+        }
+        const a = audioCache[rel];
+        if (a.error) {
+          delete audioCache[rel];
+          return speak(raw);
+        }
+        let fellBack = false;
+        const fallback = function () {
+          if (!fellBack) { fellBack = true; speak(raw); }
+        };
+        a.addEventListener('error', fallback, { once: true });
+        try { a.currentTime = 0; } catch (e) { /* ignore */ }
+        const p = a.play();
+        if (p && typeof p.catch === 'function') p.catch(fallback);
+        return true;
+      } catch (e) {
+        /* به گفتار مرورگر برمی‌گردیم */
+      }
+    }
+    return speak(raw);
+  }
+
+  /* ---------------------------------------------------------
      روتر
      --------------------------------------------------------- */
   function parseHash() {
@@ -680,6 +743,7 @@
     if (parts[0] === 'games') return { view: 'games' };
     if (parts[0] === 'game') return { view: 'game', gameId: parts[1] };
     if (parts[0] === 'progress') return { view: 'progress' };
+    if (parts[0] === 'cinema') return { view: 'cinema' };
     return { view: 'home' };
   }
 
@@ -736,6 +800,30 @@
   /* ---------------------------------------------------------
      نما: خانه
      --------------------------------------------------------- */
+  /* ---------------------------------------------------------
+     کردیت KarenSoft — نوار پایین فوتر (با آرت‌ورک اصلی لوگو)
+     --------------------------------------------------------- */
+  function karenCreditHTML() {
+    return `
+      <a class="karen-credit" href="https://www.karen-soft.ir" target="_blank" rel="noopener noreferrer" dir="ltr"
+         aria-label="طراحی و توسعه توسط کارن سافت — karen-soft.ir">
+        <span class="karen-credit-mark" aria-hidden="true">
+          <img src="images/karensoft/mark.png" alt="" width="256" height="256">
+          <span class="karen-orbit"></span>
+          <span class="karen-orbit karen-orbit-2"></span>
+        </span>
+        <span class="karen-credit-body">
+          <span class="karen-credit-label">Designed &amp; Developed by</span>
+          <span class="karen-credit-words">
+            <img class="karen-word-en" src="images/karensoft/wordmark-en.png" alt="Karensoft" width="410" height="48">
+            <span class="karen-credit-sep" aria-hidden="true">|</span>
+            <img class="karen-word-fa" src="images/karensoft/wordmark-fa.png" alt="کارن سافت" width="383" height="96">
+            <span class="karen-shine" aria-hidden="true"></span>
+          </span>
+        </span>
+      </a>`;
+  }
+
   function currentLessonId() {
     if (state.progress.last && findLesson(state.progress.last)) return state.progress.last;
     return 'm1';
@@ -837,6 +925,21 @@
 
         <section class="section">${strip}</section>
 
+        <section class="section" aria-label="سینمای حروف">
+          <div class="section-head">
+            <h2 class="t-heading">سینمای حروف</h2>
+            <button class="btn btn-quiet" data-act="nav" data-hash="#/cinema">تماشای انیمیشن</button>
+          </div>
+          <button class="cinema-banner reveal" data-act="nav" data-hash="#/cinema" aria-label="تماشای انیمیشن ماجرای حروف">
+            <img src="videos/majara-horof-poster.jpg" alt="ماجرای حروف — سحر کوچولو و حروف الفبا" loading="lazy">
+            <span class="cinema-copy">
+              <span class="cinema-kicker">${icon('play')} تماشا کن</span>
+              <span class="cinema-title">ماجرای حروف</span>
+              <span class="cinema-desc">انیمیشن شعر و موزیک کودکانه برای یادگیری الفبا</span>
+            </span>
+          </button>
+        </section>
+
         <section class="section" aria-label="فعالیت‌ها">
           <div class="section-head">
             <h2 class="t-heading">بازی و تمرین</h2>
@@ -846,8 +949,81 @@
         </section>
 
         <footer class="foot-note">
-          <span>مدرسه‌ی من · آموزش ریاضی، فارسی و علوم پایه‌ی اول</span>
+          <span class="foot-group">
+            <span>مدرسه‌ی من · آموزش ریاضی، فارسی و علوم پایه‌ی اول</span>
+            ${karenCreditHTML()}
+          </span>
           <span>ساخته‌شده برای یادگیری شاد و آرام</span>
+        </footer>
+      </div>`;
+  }
+
+  /* ---------------------------------------------------------
+     نما: سینمای حروف (ویدیوی انیمیشن)
+     --------------------------------------------------------- */
+  function renderCinema() {
+    return `
+      <div class="main-inner">
+        <section class="section" aria-label="سینمای حروف">
+          <div class="section-head">
+            <h1 class="t-heading" style="font-size:30px">${icon('play', 'h-ico')} سینمای حروف</h1>
+            <button class="btn btn-quiet" data-act="nav" data-hash="#/">${icon('arrow-left')} بازگشت به خانه</button>
+          </div>
+          <p class="t-label" style="margin-bottom:18px">انیمیشن «ماجرای حروف»؛ شعر و موزیک کودکانه برای یادگیری الفبا · مدت: ۱:۲۹</p>
+          <figure class="video-frame">
+            <video controls playsinline preload="metadata" poster="videos/majara-horof-poster.jpg">
+              <source src="videos/majara-horof.mp4" type="video/mp4">
+              مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.
+            </video>
+          </figure>
+          <div class="stage-actions" style="margin-top:18px">
+            <a class="btn btn-primary" href="videos/majara-horof.mp4" download>${icon('play')} دانلود ویدیو</a>
+            <button class="btn btn-secondary" data-act="nav" data-hash="#/lessons/farsi">${icon('book')} تمرین حروف</button>
+          </div>
+        </section>
+
+        <section class="section" aria-label="شعر داستان">
+          <div class="section-head">
+            <h2 class="t-heading">شعر ماجرای حروف</h2>
+            <p class="t-label">هر بخش از شعر را جداگانه بشنو</p>
+          </div>
+          <div class="poem-row">
+            ${[
+              { n: 1, label: 'سحر بیدار می‌شود', text: 'سحر کوچولو از خواب پاشد و گفت: بیا، بیا، بیایید ببینیم!' },
+              { n: 2, label: 'آفتاب، برف، پرواز، توپ', text: 'حرف آ آمد و آفتاب خندید، ب و پ آمدند و توپ قرمزش را انداخت.' },
+              { n: 3, label: 'ث، جیم، چه و دوستان', text: 'ث و جیم و چه آواز خواندند، ح و خ و دال رقصیدند.' },
+              { n: 4, label: 'رقص حروف و شب‌به‌خیر', text: 'ر و ز و ژ رقصیدند و الفبا خوابید زیر نور ماه.' }
+            ].map(p => `
+              <button class="audio-btn" data-act="speak" data-text="${escapeHtml(p.text)}" data-audio="stories/poem-${p.n}" aria-label="شنیدن ${escapeHtml(p.label)}">
+                ${icon('speaker')} <span>${faDigits(p.n)} · ${p.label}</span>
+              </button>`).join('')}
+          </div>
+        </section>
+
+        <section class="section" aria-label="درباره‌ی داستان">
+          <div class="section-head">
+            <h2 class="t-heading">داستان از چه قرار است؟</h2>
+          </div>
+          <div class="activity-row">
+            ${[
+              { title: 'سحر و ستاره', desc: 'سحر کوچولو با ستاره‌ی خندان همراه می‌شود تا حروف را پیدا کند.', art: 'seasons' },
+              { title: 'شعر آموزشی', desc: 'شعر کودکانه «آفتاب، برف، پرواز، توپ» حرف‌ها را به خاطرماندنی می‌کند.', art: 'lettercard' },
+              { title: 'موزیک ملایم', desc: 'آهنگ لالایی با حال‌وهوای موسیقی ایرانی، همراه آرام کودکان.', art: 'sound' }
+            ].map(a => `
+              <div class="act-card reveal">
+                <div class="act-ill">${bigArtSVG(a.art)}</div>
+                <div class="act-title">${a.title}</div>
+                <div class="act-desc">${a.desc}</div>
+              </div>`).join('')}
+          </div>
+        </section>
+
+        <footer class="foot-note">
+          <span class="foot-group">
+            <span>مدرسه‌ی من · سینمای حروف</span>
+            ${karenCreditHTML()}
+          </span>
+          <span>شعر و موزیک کودکانه برای یادگیری الفبا</span>
         </footer>
       </div>`;
   }
@@ -895,7 +1071,10 @@
         </header>
         <div class="lesson-grid">${cards}</div>
         <footer class="foot-note">
-          <span>${faDigits(lessons.length)} درس · ${s.tagline}</span>
+          <span class="foot-group">
+            <span>${faDigits(lessons.length)} درس · ${s.tagline}</span>
+            ${karenCreditHTML()}
+          </span>
           <button class="btn btn-quiet" data-act="adult">${icon('wrench')} ورود بزرگ‌ترها</button>
         </footer>
       </div>`;
@@ -1019,12 +1198,22 @@
         return `<div class="teach-figs">${objectsBoard(t.object, t.count)}<p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
       }
       if (t.kind === 'letters') {
-        const tiles = t.letters.map(l => `<div class="teach-fig"><div style="font-size:52px;font-weight:800;line-height:1.1">${l}</div></div>`).join('');
-        const words = (t.words || []).map(w => `<div class="teach-fig"><div class="cap" style="font-size:20px">${escapeHtml(w[1])}</div></div>`).join('');
+        const tiles = t.letters.map(l => `
+          <div class="teach-fig">
+            <div style="font-size:52px;font-weight:800;line-height:1.1">${l}</div>
+            <button class="audio-btn mini" data-act="speak" data-text="${escapeHtml(l)}" aria-label="شنیدن حرف ${escapeHtml(l)}">${icon('speaker')}</button>
+          </div>`).join('');
+        const words = (t.words || []).map(w => `
+          <div class="teach-fig">
+            <div class="cap" style="font-size:20px">${escapeHtml(w[1])}</div>
+            <button class="audio-btn mini" data-act="speak" data-text="${escapeHtml(w[1])}" aria-label="شنیدن کلمه‌ی ${escapeHtml(w[1])}">${icon('speaker')}</button>
+          </div>`).join('');
         return `<div class="teach-figs">${tiles}</div><div class="teach-figs">${words}</div>`;
       }
       if (t.kind === 'story') {
-        return `<div class="story-text"><strong>${escapeHtml(t.title)}</strong><br>${escapeHtml(t.text)}</div>`;
+        return `<div class="story-text"><strong>${escapeHtml(t.title)}</strong><br>${escapeHtml(t.text)}
+          ${t.audio ? `<div style="margin-top:12px"><button class="audio-btn" data-act="speak" data-text="${escapeHtml(t.text)}" data-audio="${escapeHtml(t.audio)}" aria-label="شنیدن داستان ${escapeHtml(t.title)}">${icon('speaker')} <span>شنیدن داستان</span></button></div>` : ''}
+        </div>`;
       }
       if (t.kind === 'equation') {
         return `<div class="center-stage">${equationSVG(t.a, t.op, t.b)}<p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
@@ -1175,7 +1364,10 @@
       const dots = act.op === '+' ? objectsBoard('ball', Math.min(act.a, 8)) + objectsBoard('apple', Math.min(act.b, 8)) : objectsBoard('ball', Math.min(act.a, 8));
       body = `<div class="center-stage">${equationSVG(act.a, act.op, act.b)}</div>${dots}` + numberOptions(optData);
     } else if (kind === 'letter') {
-      body = letterOptions(optData);
+      body = `
+        <div class="center-stage">
+          <button class="audio-btn" data-act="speak" data-text="${escapeHtml(act.letter)}" aria-label="شنیدن حرف ${escapeHtml(act.letter)}">${icon('speaker')} <span>شنیدن حرف</span></button>
+        </div>` + letterOptions(optData);
     } else if (kind === 'sound') {
       body = `
         <div class="center-stage">
@@ -1561,7 +1753,10 @@
         </div>
 
         <footer class="foot-note">
-          <span>پیشرفت روی همین دستگاه ذخیره می‌شود.</span>
+          <span class="foot-group">
+            <span>پیشرفت روی همین دستگاه ذخیره می‌شود.</span>
+            ${karenCreditHTML()}
+          </span>
           <button class="btn btn-quiet" data-act="adult">${icon('wrench')} ورود بزرگ‌ترها</button>
         </footer>
       </div>`;
@@ -1621,6 +1816,7 @@
         </ul>
         <div class="stage-actions">
           <button class="btn btn-secondary" data-act="nav" data-hash="#/progress">صفحه‌ی پیشرفت</button>
+          <button class="btn btn-secondary" data-act="install-open">نصب برنامه روی دستگاه</button>
           <button class="btn btn-quiet" data-act="reset-progress">پاک کردن پیشرفت</button>
         </div>
       </div>`;
@@ -1678,6 +1874,8 @@
     } else if (r.view === 'progress') {
       activeNav = 'progress';
       html = renderProgress();
+    } else if (r.view === 'cinema') {
+      html = renderCinema();
     }
 
     app.innerHTML = `
@@ -1720,6 +1918,151 @@
       }
     }
   }
+
+  /* ---------------------------------------------------------
+     PWA: ثبت Service Worker + پیشنهاد نصب
+     --------------------------------------------------------- */
+  const INSTALL_KEY = 'madrese-install-prompt-v1';
+  let deferredInstall = null;
+  let installOfferTimer = null;
+
+  function isStandalone() {
+    try {
+      return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+        window.navigator.standalone === true;
+    } catch (e) { return false; }
+  }
+
+  function isIOS() {
+    const ua = navigator.userAgent || '';
+    return /iphone|ipad|ipod/i.test(ua) ||
+      (navigator.platform === 'MacIntel' && (navigator.maxTouchPoints || 0) > 1);
+  }
+
+  function installDismissedRecently() {
+    try {
+      const ts = Number(localStorage.getItem(INSTALL_KEY) || 0);
+      return !!ts && (Date.now() - ts) < 7 * 24 * 3600 * 1000;
+    } catch (e) { return false; }
+  }
+
+  function rememberInstallDismiss() {
+    try { localStorage.setItem(INSTALL_KEY, String(Date.now())); } catch (e) {}
+  }
+
+  window.addEventListener('beforeinstallprompt', (ev) => {
+    ev.preventDefault();
+    deferredInstall = ev;
+    /* اگر مودال نصب الان باز است، نسخه‌ی دکمه‌دار را جایگزین کن */
+    const open = document.getElementById('modal-root');
+    if (open && open.querySelector('#install-title')) openInstallModal();
+    scheduleInstallOffer();
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredInstall = null;
+    closeModal();
+  });
+
+  function scheduleInstallOffer() {
+    if (isStandalone() || installDismissedRecently()) return;
+    if (installOfferTimer) return;
+    installOfferTimer = setTimeout(() => {
+      installOfferTimer = null;
+      if (document.getElementById('modal-root')) return;
+      openInstallModal();
+    }, 2500);
+  }
+
+  function openInstallModal() {
+    closeModal();
+    const wrap = document.createElement('div');
+    wrap.className = 'modal-backdrop';
+    wrap.id = 'modal-root';
+    let title, body;
+    if (isStandalone()) {
+      title = 'برنامه نصب شده است';
+      body = `
+        <p class="t-body">مدرسه‌ی من روی همین دستگاه نصب است و از صفحه‌ی اصلی باز می‌شود.</p>
+        <div class="stage-actions"><button class="btn btn-primary" data-act="modal-close">باشه</button></div>`;
+    } else if (isIOS()) {
+      title = 'مدرسه‌ی من را روی آیفون نصب کن';
+      body = `
+        <p class="t-body">برای نصب روی آیفون یا آیپد:</p>
+        <ul style="display:flex;flex-direction:column;gap:8px;margin:12px 0">
+          <li class="t-label" style="line-height:2">۱. روی دکمه‌ی <strong>اشتراک‌گذاری</strong> (مربع با فلش) بزن.</li>
+          <li class="t-label" style="line-height:2">۲. گزینه‌ی <strong>Add to Home Screen</strong> را انتخاب کن.</li>
+          <li class="t-label" style="line-height:2">۳. دکمه‌ی <strong>Add</strong> را بزن.</li>
+        </ul>
+        <div class="stage-actions"><button class="btn btn-primary" data-act="install-dismiss">متوجه شدم</button></div>`;
+    } else if (deferredInstall) {
+      title = 'مدرسه‌ی من را نصب کن';
+      body = `
+        <p class="t-body">با نصب برنامه، از صفحه‌ی اصلی گوشی یا کامپیوتر بازش کن و بدون مرورگر ادامه بده — حتی آفلاین!</p>
+        <div class="stage-actions">
+          <button class="btn btn-primary" data-act="install-now">${icon('play')} نصب برنامه</button>
+          <button class="btn btn-quiet" data-act="install-dismiss">بعداً</button>
+        </div>`;
+    } else {
+      title = 'مدرسه‌ی من را نصب کن';
+      body = `
+        <p class="t-body">برای نصب «مدرسه‌ی من»، در مرورگر خود گزینه‌ی «نصب برنامه» یا «افزودن به صفحه‌ی اصلی» را از منوی مرورگر انتخاب کن.</p>
+        <div class="stage-actions"><button class="btn btn-primary" data-act="install-dismiss">باشه</button></div>`;
+    }
+    wrap.innerHTML = `
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="install-title">
+        <div class="modal-head">
+          <h2 class="t-sub" id="install-title">${title}</h2>
+          <button class="icon-btn" data-act="modal-close" aria-label="بستن">${icon('close')}</button>
+        </div>
+        ${body}
+      </div>`;
+    document.body.appendChild(wrap);
+  }
+
+  function showInstallDone() {
+    closeModal();
+    const wrap = document.createElement('div');
+    wrap.className = 'modal-backdrop';
+    wrap.id = 'modal-root';
+    wrap.innerHTML = `
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="install-title">
+        <div class="modal-head">
+          <h2 class="t-sub" id="install-title">نصب شد!</h2>
+          <button class="icon-btn" data-act="modal-close" aria-label="بستن">${icon('close')}</button>
+        </div>
+        <p class="t-body">آفرین! «مدرسه‌ی من» به صفحه‌ی اصلی دستگاه اضافه شد. ${icon('star-yellow')}</p>
+        <div class="stage-actions"><button class="btn btn-primary" data-act="modal-close">عالی</button></div>
+      </div>`;
+    document.body.appendChild(wrap);
+  }
+
+  async function runInstallNow() {
+    if (!deferredInstall) { openInstallModal(); return; }
+    const ev = deferredInstall;
+    deferredInstall = null;
+    try {
+      ev.prompt();
+      const choice = await ev.userChoice;
+      if (choice && choice.outcome === 'accepted') {
+        showInstallDone();
+      } else {
+        rememberInstallDismiss();
+        closeModal();
+      }
+    } catch (e) {
+      openInstallModal();
+    }
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+  window.addEventListener('load', () => {
+    scheduleInstallOffer();
+  });
 
   /* ---------------------------------------------------------
      رویدادها (event delegation)
@@ -1794,7 +2137,7 @@
         render();
         break;
       case 'speak': {
-        const ok = speak(t.dataset.text || '');
+        const ok = playSound(t.dataset.text || '', t.dataset.audio || '');
         if (!ok) {
           const label = t.querySelector('span');
           if (label) {
@@ -1807,6 +2150,16 @@
       }
       case 'adult':
         openAdultModal();
+        break;
+      case 'install-open':
+        openInstallModal();
+        break;
+      case 'install-now':
+        runInstallNow();
+        break;
+      case 'install-dismiss':
+        rememberInstallDismiss();
+        closeModal();
         break;
       case 'sheet-open':
         openSheet();
