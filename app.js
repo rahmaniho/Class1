@@ -561,6 +561,51 @@
   }
 
   /* ---------------------------------------------------------
+     تصویرهای تصویری (PNG) با جایگزین SVG در صورت خطا
+     --------------------------------------------------------- */
+  const ART = {
+    hero: {
+      src: 'images/hero-world.jpg',
+      alt: 'درخت دانش با خانه‌های درختی، خورشید خندان، قایق کاغذی و مکعب‌های رنگی'
+    },
+    math: {
+      src: 'images/subject-math.jpg',
+      alt: 'وسایل ریاضی: ده‌چارچوب با مهره‌های رنگی، مکعب‌های شمارش و کاسه‌ی سیب'
+    },
+    farsi: {
+      src: 'images/subject-farsi.jpg',
+      alt: 'میز فارسی: کتاب باز، مداد زرد، پرنده و قایق کاغذی'
+    },
+    science: {
+      src: 'images/subject-science.jpg',
+      alt: 'کشف علوم: جوانه‌ی لوبیا در شیشه، خورشید، ابر بارانی و کفشدوزک'
+    },
+    celebrate: {
+      src: 'images/celebrate.jpg',
+      alt: 'مدال کاغذی، بادکنک و ستاره‌های رنگی برای جشن یادگیری'
+    }
+  };
+
+  function artImg(kind, opts) {
+    const a = ART[kind];
+    const o = opts || {};
+    const fallback = o.fallback || '';
+    return `<img src="${a.src}" alt="${escapeHtml(o.alt !== undefined ? o.alt : a.alt)}"
+      ${o.cls ? `class="${o.cls}"` : ''}
+      ${o.style ? `style="${o.style}"` : ''}
+      loading="${o.eager ? 'eager' : 'lazy'}"
+      onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='${o.fallbackDisplay || 'block'}'">
+      ${fallback ? `<div style="display:none;${o.fallbackStyle || ''}">${fallback}</div>` : ''}`;
+  }
+
+  function subjectArt(subjectId, opts) {
+    return artImg(subjectId, Object.assign({
+      fallback: islandArtSVG(subjectId),
+      fallbackStyle: 'width:100%'
+    }, opts || {}));
+  }
+
+  /* ---------------------------------------------------------
      وضعیت و پیشرفت
      --------------------------------------------------------- */
   const STORE_KEY = 'madrese-man-progress-v1';
@@ -704,7 +749,7 @@
       const n = CURRICULUM[sid].length;
       return `
       <button class="island ${s.fieldClass} reveal d${i}" data-act="subject" data-subject="${sid}" aria-label="درس‌های ${s.title}">
-        <div class="island-art">${islandArtSVG(sid)}</div>
+        <div class="island-art">${subjectArt(sid)}</div>
         <div class="island-body">
           <div class="island-title">${s.title}</div>
           <div class="island-tag">${s.tagline}</div>
@@ -778,6 +823,10 @@
           </div>
         </section>
 
+        <figure class="img-frame stage-banner reveal" aria-label="دنیای یادگیری">
+          ${artImg('hero', { eager: true, alt: ART.hero.alt })}
+        </figure>
+
         <section class="section" aria-label="موضوع‌ها">
           <div class="section-head">
             <h2 class="t-heading">جزیره‌ی درس‌ها</h2>
@@ -833,9 +882,16 @@
       <div class="main-inner">
         <header class="page-head">
           <button class="back-link" data-act="nav" data-hash="#/">${icon('arrow-right')} بازگشت به خانه</button>
-          <h1 class="t-display">درس‌های ${s.title}</h1>
-          <p class="t-body measure">${s.intro}</p>
-          <div class="stage-actions">${subjectTabs}</div>
+          <div class="page-hero">
+            <div class="page-hero-copy">
+              <h1 class="t-display">درس‌های ${s.title}</h1>
+              <p class="t-body measure">${s.intro}</p>
+              <div class="stage-actions">${subjectTabs}</div>
+            </div>
+            <figure class="img-frame page-hero-art">
+              ${subjectArt(s.id, { eager: true })}
+            </figure>
+          </div>
         </header>
         <div class="lesson-grid">${cards}</div>
         <footer class="foot-note">
@@ -908,6 +964,9 @@
       <div class="main-inner">
         <header class="page-head">
           <button class="back-link" data-act="subject" data-subject="${subject}">${icon('arrow-right')} درس‌های ${s.title}</button>
+          <figure class="img-frame lesson-band">
+            ${subjectArt(subject, { alt: '' })}
+          </figure>
           <h1 class="t-heading">${escapeHtml(lesson.title)}</h1>
           <div class="objective-banner">${icon('target')} <span>هدف یادگیری: ${escapeHtml(lesson.objective)}</span></div>
         </header>
@@ -1010,7 +1069,12 @@
     return `
       <article class="teach-card is-focus reveal">
         <div class="center-stage">
-          <svg width="120" height="120" viewBox="0 0 24 24" aria-hidden="true"><polygon points="${STAR_POINTS}" fill="#FFD45A" stroke="${INK}" stroke-width="1.1" stroke-linejoin="round"/></svg>
+          <figure class="img-frame done-art">
+            ${artImg('celebrate', {
+      fallback: `<svg width="120" height="120" viewBox="0 0 24 24" aria-hidden="true"><polygon points="${STAR_POINTS}" fill="#FFD45A" stroke="${INK}" stroke-width="1.1" stroke-linejoin="round"/></svg>`,
+      fallbackDisplay: 'flex'
+    })}
+          </figure>
           <h2>آفرین! درس تمام شد</h2>
           <p class="t-body measure">تو «${escapeHtml(lesson.title)}» را یاد گرفتی. ${faDigits(stars)} ستاره گرفتی.</p>
           <div class="star-row" aria-hidden="true">
@@ -1345,8 +1409,15 @@
       <div class="main-inner">
         <header class="page-head">
           <button class="back-link" data-act="nav" data-hash="#/">${icon('arrow-right')} بازگشت به خانه</button>
-          <h1 class="t-display">بازی‌های آموزشی</h1>
-          <p class="t-body measure">بازی کن، یاد بگیر و ستاره جمع کن. هر بازی چند مرحله‌ی کوتاه دارد.</p>
+          <div class="page-hero">
+            <div class="page-hero-copy">
+              <h1 class="t-display">بازی‌های آموزشی</h1>
+              <p class="t-body measure">بازی کن، یاد بگیر و ستاره جمع کن. هر بازی چند مرحله‌ی کوتاه دارد.</p>
+            </div>
+            <figure class="img-frame page-hero-art">
+              ${artImg('hero', {})}
+            </figure>
+          </div>
         </header>
         <div class="activity-row">${cards}</div>
       </div>`;
@@ -1366,7 +1437,12 @@
         <div class="main-inner">
           <article class="teach-card is-focus reveal">
             <div class="center-stage">
-              <svg width="110" height="110" viewBox="0 0 24 24" aria-hidden="true"><polygon points="${STAR_POINTS}" fill="#FFD45A" stroke="${INK}" stroke-width="1.1"/></svg>
+              <figure class="img-frame done-art">
+                ${artImg('celebrate', {
+      fallback: `<svg width="110" height="110" viewBox="0 0 24 24" aria-hidden="true"><polygon points="${STAR_POINTS}" fill="#FFD45A" stroke="${INK}" stroke-width="1.1"/></svg>`,
+      fallbackDisplay: 'flex'
+    })}
+              </figure>
               <h2 class="t-heading">بازی تمام شد!</h2>
               <p class="t-body">تو ${faDigits(g.score)} از ۵ پاسخ را درست دادی. آفرین!</p>
               <div class="stage-actions">
