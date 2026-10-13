@@ -1816,6 +1816,7 @@
         </ul>
         <div class="stage-actions">
           <button class="btn btn-secondary" data-act="nav" data-hash="#/progress">صفحه‌ی پیشرفت</button>
+          <button class="btn btn-secondary" data-act="install-open">نصب برنامه روی دستگاه</button>
           <button class="btn btn-quiet" data-act="reset-progress">پاک کردن پیشرفت</button>
         </div>
       </div>`;
@@ -1919,6 +1920,151 @@
   }
 
   /* ---------------------------------------------------------
+     PWA: ثبت Service Worker + پیشنهاد نصب
+     --------------------------------------------------------- */
+  const INSTALL_KEY = 'madrese-install-prompt-v1';
+  let deferredInstall = null;
+  let installOfferTimer = null;
+
+  function isStandalone() {
+    try {
+      return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+        window.navigator.standalone === true;
+    } catch (e) { return false; }
+  }
+
+  function isIOS() {
+    const ua = navigator.userAgent || '';
+    return /iphone|ipad|ipod/i.test(ua) ||
+      (navigator.platform === 'MacIntel' && (navigator.maxTouchPoints || 0) > 1);
+  }
+
+  function installDismissedRecently() {
+    try {
+      const ts = Number(localStorage.getItem(INSTALL_KEY) || 0);
+      return !!ts && (Date.now() - ts) < 7 * 24 * 3600 * 1000;
+    } catch (e) { return false; }
+  }
+
+  function rememberInstallDismiss() {
+    try { localStorage.setItem(INSTALL_KEY, String(Date.now())); } catch (e) {}
+  }
+
+  window.addEventListener('beforeinstallprompt', (ev) => {
+    ev.preventDefault();
+    deferredInstall = ev;
+    /* اگر مودال نصب الان باز است، نسخه‌ی دکمه‌دار را جایگزین کن */
+    const open = document.getElementById('modal-root');
+    if (open && open.querySelector('#install-title')) openInstallModal();
+    scheduleInstallOffer();
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredInstall = null;
+    closeModal();
+  });
+
+  function scheduleInstallOffer() {
+    if (isStandalone() || installDismissedRecently()) return;
+    if (installOfferTimer) return;
+    installOfferTimer = setTimeout(() => {
+      installOfferTimer = null;
+      if (document.getElementById('modal-root')) return;
+      openInstallModal();
+    }, 2500);
+  }
+
+  function openInstallModal() {
+    closeModal();
+    const wrap = document.createElement('div');
+    wrap.className = 'modal-backdrop';
+    wrap.id = 'modal-root';
+    let title, body;
+    if (isStandalone()) {
+      title = 'برنامه نصب شده است';
+      body = `
+        <p class="t-body">مدرسه‌ی من روی همین دستگاه نصب است و از صفحه‌ی اصلی باز می‌شود.</p>
+        <div class="stage-actions"><button class="btn btn-primary" data-act="modal-close">باشه</button></div>`;
+    } else if (isIOS()) {
+      title = 'مدرسه‌ی من را روی آیفون نصب کن';
+      body = `
+        <p class="t-body">برای نصب روی آیفون یا آیپد:</p>
+        <ul style="display:flex;flex-direction:column;gap:8px;margin:12px 0">
+          <li class="t-label" style="line-height:2">۱. روی دکمه‌ی <strong>اشتراک‌گذاری</strong> (مربع با فلش) بزن.</li>
+          <li class="t-label" style="line-height:2">۲. گزینه‌ی <strong>Add to Home Screen</strong> را انتخاب کن.</li>
+          <li class="t-label" style="line-height:2">۳. دکمه‌ی <strong>Add</strong> را بزن.</li>
+        </ul>
+        <div class="stage-actions"><button class="btn btn-primary" data-act="install-dismiss">متوجه شدم</button></div>`;
+    } else if (deferredInstall) {
+      title = 'مدرسه‌ی من را نصب کن';
+      body = `
+        <p class="t-body">با نصب برنامه، از صفحه‌ی اصلی گوشی یا کامپیوتر بازش کن و بدون مرورگر ادامه بده — حتی آفلاین!</p>
+        <div class="stage-actions">
+          <button class="btn btn-primary" data-act="install-now">${icon('play')} نصب برنامه</button>
+          <button class="btn btn-quiet" data-act="install-dismiss">بعداً</button>
+        </div>`;
+    } else {
+      title = 'مدرسه‌ی من را نصب کن';
+      body = `
+        <p class="t-body">برای نصب «مدرسه‌ی من»، در مرورگر خود گزینه‌ی «نصب برنامه» یا «افزودن به صفحه‌ی اصلی» را از منوی مرورگر انتخاب کن.</p>
+        <div class="stage-actions"><button class="btn btn-primary" data-act="install-dismiss">باشه</button></div>`;
+    }
+    wrap.innerHTML = `
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="install-title">
+        <div class="modal-head">
+          <h2 class="t-sub" id="install-title">${title}</h2>
+          <button class="icon-btn" data-act="modal-close" aria-label="بستن">${icon('close')}</button>
+        </div>
+        ${body}
+      </div>`;
+    document.body.appendChild(wrap);
+  }
+
+  function showInstallDone() {
+    closeModal();
+    const wrap = document.createElement('div');
+    wrap.className = 'modal-backdrop';
+    wrap.id = 'modal-root';
+    wrap.innerHTML = `
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="install-title">
+        <div class="modal-head">
+          <h2 class="t-sub" id="install-title">نصب شد!</h2>
+          <button class="icon-btn" data-act="modal-close" aria-label="بستن">${icon('close')}</button>
+        </div>
+        <p class="t-body">آفرین! «مدرسه‌ی من» به صفحه‌ی اصلی دستگاه اضافه شد. ${icon('star-yellow')}</p>
+        <div class="stage-actions"><button class="btn btn-primary" data-act="modal-close">عالی</button></div>
+      </div>`;
+    document.body.appendChild(wrap);
+  }
+
+  async function runInstallNow() {
+    if (!deferredInstall) { openInstallModal(); return; }
+    const ev = deferredInstall;
+    deferredInstall = null;
+    try {
+      ev.prompt();
+      const choice = await ev.userChoice;
+      if (choice && choice.outcome === 'accepted') {
+        showInstallDone();
+      } else {
+        rememberInstallDismiss();
+        closeModal();
+      }
+    } catch (e) {
+      openInstallModal();
+    }
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+  window.addEventListener('load', () => {
+    scheduleInstallOffer();
+  });
+
+  /* ---------------------------------------------------------
      رویدادها (event delegation)
      --------------------------------------------------------- */
   document.addEventListener('click', (ev) => {
@@ -2004,6 +2150,16 @@
       }
       case 'adult':
         openAdultModal();
+        break;
+      case 'install-open':
+        openInstallModal();
+        break;
+      case 'install-now':
+        runInstallNow();
+        break;
+      case 'install-dismiss':
+        rememberInstallDismiss();
+        closeModal();
         break;
       case 'sheet-open':
         openSheet();
