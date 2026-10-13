@@ -669,6 +669,69 @@
   }
 
   /* ---------------------------------------------------------
+     صداهای ضبط‌شده‌ی حروف و کلمه‌ها
+     اول فایل صوتی پخش می‌شود؛ اگر نبود، گفتار مرورگر جایگزین است
+     --------------------------------------------------------- */
+  const AUDIO_FILES = {
+    /* حروف الفبا */
+    'آ': 'letters/alef', 'ب': 'letters/be', 'پ': 'letters/pe', 'ت': 'letters/te',
+    'ث': 'letters/the', 'ج': 'letters/jim', 'چ': 'letters/che', 'ح': 'letters/ha',
+    'خ': 'letters/kha', 'د': 'letters/dal', 'ذ': 'letters/zal', 'ر': 'letters/re',
+    'ز': 'letters/ze', 'س': 'letters/sin', 'ش': 'letters/shin', 'ص': 'letters/sad',
+    'ض': 'letters/zad', 'ط': 'letters/ta', 'ظ': 'letters/za', 'ع': 'letters/ain',
+    'غ': 'letters/ghain', 'ف': 'letters/fe', 'ق': 'letters/qaf', 'ک': 'letters/kaf',
+    'گ': 'letters/gaf', 'ل': 'letters/lam', 'م': 'letters/mim', 'ن': 'letters/nun',
+    'و': 'letters/vav', 'ه': 'letters/heh', 'هـ': 'letters/heh', 'ی': 'letters/yeh',
+    /* کلمه‌های درس‌ها */
+    'آب': 'words/ab', 'برف': 'words/barf', 'پرواز': 'words/parvaz', 'توپ': 'words/toop',
+    'ثوب': 'words/soob', 'اثر': 'words/asar', 'جوجه': 'words/joojeh', 'چتر': 'words/chatr',
+    'جعبه': 'words/jobeh', 'چرخ': 'words/charkh', 'حلزون': 'words/halazoon', 'خورشید': 'words/khorshid',
+    'حبه': 'words/habbeh', 'خانه': 'words/khaneh', 'درخت': 'words/derakht', 'ذره': 'words/zarreh',
+    'دست': 'words/dast', 'بذر': 'words/bazar', 'رنگینکمان': 'words/ranginakaman', 'زنبور': 'words/zanboor',
+    'روز': 'words/rooz', 'زیر': 'words/zir', 'سیب': 'words/sib', 'شمع': 'words/sham',
+    'صدا': 'words/seda', 'باغ': 'words/bagh', 'طوطی': 'words/toti', 'ظرف': 'words/zarf',
+    'عسل': 'words/asal', 'غروب': 'words/ghorub', 'فیل': 'words/fil', 'قورباغه': 'words/ghorbagheh',
+    'کتاب': 'words/ketab', 'گربه': 'words/gorbeh', 'لکلک': 'words/laklak', 'ماهی': 'words/mahi',
+    'نان': 'words/nan', 'والیبال': 'words/valeyball', 'هندوانه': 'words/hendevaneh', 'یخ': 'words/yakh',
+    'هویج': 'words/havij', 'یادگیری': 'words/yadgiri', 'گنجشک': 'words/gonjeshk',
+    'خانواده': 'words/khanevadeh', 'صبحانه': 'words/sobhaneh', 'رنگین‌کمان': 'words/ranginakaman',
+    'بزرگسال': 'words/bozorgsal', 'مدرسه': 'words/madrese', 'الگو': 'words/elgoo'
+  };
+
+  const audioCache = {};
+
+  function playSound(text) {
+    const raw = String(text || '').trim();
+    if (!raw) return false;
+    const key = raw.replace(/\u200c/g, ''); /* حذف نیم‌فاصله برای جست‌وجوی نگاشت */
+    const rel = AUDIO_FILES[key] || AUDIO_FILES[raw];
+    if (rel && typeof Audio !== 'undefined') {
+      try {
+        if (!audioCache[rel]) {
+          audioCache[rel] = new Audio('audio/' + rel + '.mp3');
+        }
+        const a = audioCache[rel];
+        if (a.error) {
+          delete audioCache[rel];
+          return speak(raw);
+        }
+        let fellBack = false;
+        const fallback = function () {
+          if (!fellBack) { fellBack = true; speak(raw); }
+        };
+        a.addEventListener('error', fallback, { once: true });
+        try { a.currentTime = 0; } catch (e) { /* ignore */ }
+        const p = a.play();
+        if (p && typeof p.catch === 'function') p.catch(fallback);
+        return true;
+      } catch (e) {
+        /* به گفتار مرورگر برمی‌گردیم */
+      }
+    }
+    return speak(raw);
+  }
+
+  /* ---------------------------------------------------------
      روتر
      --------------------------------------------------------- */
   function parseHash() {
@@ -1019,8 +1082,16 @@
         return `<div class="teach-figs">${objectsBoard(t.object, t.count)}<p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
       }
       if (t.kind === 'letters') {
-        const tiles = t.letters.map(l => `<div class="teach-fig"><div style="font-size:52px;font-weight:800;line-height:1.1">${l}</div></div>`).join('');
-        const words = (t.words || []).map(w => `<div class="teach-fig"><div class="cap" style="font-size:20px">${escapeHtml(w[1])}</div></div>`).join('');
+        const tiles = t.letters.map(l => `
+          <div class="teach-fig">
+            <div style="font-size:52px;font-weight:800;line-height:1.1">${l}</div>
+            <button class="audio-btn mini" data-act="speak" data-text="${escapeHtml(l)}" aria-label="شنیدن حرف ${escapeHtml(l)}">${icon('speaker')}</button>
+          </div>`).join('');
+        const words = (t.words || []).map(w => `
+          <div class="teach-fig">
+            <div class="cap" style="font-size:20px">${escapeHtml(w[1])}</div>
+            <button class="audio-btn mini" data-act="speak" data-text="${escapeHtml(w[1])}" aria-label="شنیدن کلمه‌ی ${escapeHtml(w[1])}">${icon('speaker')}</button>
+          </div>`).join('');
         return `<div class="teach-figs">${tiles}</div><div class="teach-figs">${words}</div>`;
       }
       if (t.kind === 'story') {
@@ -1175,7 +1246,10 @@
       const dots = act.op === '+' ? objectsBoard('ball', Math.min(act.a, 8)) + objectsBoard('apple', Math.min(act.b, 8)) : objectsBoard('ball', Math.min(act.a, 8));
       body = `<div class="center-stage">${equationSVG(act.a, act.op, act.b)}</div>${dots}` + numberOptions(optData);
     } else if (kind === 'letter') {
-      body = letterOptions(optData);
+      body = `
+        <div class="center-stage">
+          <button class="audio-btn" data-act="speak" data-text="${escapeHtml(act.letter)}" aria-label="شنیدن حرف ${escapeHtml(act.letter)}">${icon('speaker')} <span>شنیدن حرف</span></button>
+        </div>` + letterOptions(optData);
     } else if (kind === 'sound') {
       body = `
         <div class="center-stage">
@@ -1794,7 +1868,7 @@
         render();
         break;
       case 'speak': {
-        const ok = speak(t.dataset.text || '');
+        const ok = playSound(t.dataset.text || '');
         if (!ok) {
           const label = t.querySelector('span');
           if (label) {

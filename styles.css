@@ -940,6 +940,14 @@ ul { margin: 0; padding: 0; list-style: none; }
 .audio-btn:hover { background: #C9E9FF; }
 .audio-btn:active { transform: scale(0.98); }
 .audio-btn .wave { width: 22px; height: 22px; }
+.audio-btn.mini {
+  min-height: 48px;
+  width: 48px;
+  padding: 0;
+  border-radius: 50%;
+  flex: none;
+}
+.audio-btn.mini svg { width: 22px; height: 22px; }
 
 /* =========================================================
    Feedback panel
