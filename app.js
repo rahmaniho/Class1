@@ -2388,6 +2388,7 @@
      نما: دانلود و نصب
      --------------------------------------------------------- */
   const RELEASES_PAGE = 'https://github.com/rahmaniho/Class1/releases';
+  const RELEASE_VERSION = '۱٫۰٫۰';
   const APK_URL = 'https://github.com/rahmaniho/Class1/releases/latest/download/madrese-man-android.apk';
   const ZIP_URL = 'https://github.com/rahmaniho/Class1/releases/latest/download/madrese-man-web.zip';
 
@@ -2429,7 +2430,7 @@
       ],
       actions: `<a class="btn btn-primary" href="${APK_URL}" target="_blank" rel="noopener noreferrer">${icon('download')} دانلودِ نسخه‌ی اندروید</a>
         <a class="btn btn-secondary" href="${RELEASES_PAGE}" target="_blank" rel="noopener noreferrer">همه‌ی نسخه‌ها</a>`,
-      note: 'اندروید ۶ و بالاتر · حدود ۳۰ مگابایت · ویدیوها برای پخش به اینترنت نیاز دارند'
+      note: 'اندروید ۶ و بالاتر · حدود ۳۱ مگابایت · ویدیوها برای پخش به اینترنت نیاز دارند'
     });
 
     const ios = card({
@@ -2471,7 +2472,7 @@
         'همه‌ی درس‌ها، تصویرها و صداها بدون اینترنت در دسترس‌اند.'
       ],
       actions: `<a class="btn btn-primary" href="${ZIP_URL}" target="_blank" rel="noopener noreferrer">${icon('download')} دانلودِ بسته‌ی کامل</a>`,
-      note: 'اگر لینک‌ها هنوز فعال نیستند، نسخه‌ی تازه منتشر نشده است؛ از دکمه‌ی «نصب روی این دستگاه» استفاده کن'
+      note: `نسخه‌ی ${RELEASE_VERSION} · حجمِ بسته حدود ۲۷ مگابایت · برای نصب روی اندروید، فایل APK بالا را بگیر`
     });
 
     return `
@@ -2482,6 +2483,7 @@
             <div class="page-hero-copy">
               <h1 class="t-display">مدرسه‌ی من را همیشه همراهت داشته باش</h1>
               <p class="t-body measure">یک‌بار نصب کن؛ بعد از آن درس‌ها، تمرین‌ها، صداها و تصویرها حتی بدون اینترنت کار می‌کنند.</p>
+              <p class="dl-version">${icon('check')} آخرین نسخه: ${RELEASE_VERSION} — آماده‌ی دانلود</p>
             </div>
             <figure class="img-frame page-hero-art install-hero">
               ${artImg('appIcon', { eager: true, fallback: shareArrowSVG(), fallbackDisplay: 'flex', alt: 'آیکونِ برنامه‌ی مدرسه‌ی من' })}

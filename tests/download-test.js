@@ -74,6 +74,11 @@ const ok = (c, n) => { if (c) { pass++; console.log('  ✓ ' + n); } else { fail
   ok(!/undefined|NaN|\[object/.test(text), 'هیچ متنِ ناقصی در صفحه نیست');
   ok(!!doc.querySelector('.foot-note + .dedi-block'), 'تقدیم و یادکردِ حامی زیرِ فوترِ این صفحه هم هست');
 
+  console.log('\nنسخه و انتشار:');
+  ok(/آخرین نسخه/.test(text), 'نشانِ آخرین نسخه در صفحه هست');
+  ok(!/اگر لینک‌ها هنوز فعال نیستند/.test(text), 'یادداشتِ «لینک‌ها فعال نیستند» حذف شده');
+  ok(/حدود ۳۱ مگابایت/.test(text), 'اندازه‌ی APK در صفحه نوشته شده');
+
   console.log('\nناوبری:');
   const rail = Array.from(doc.querySelectorAll('.rail-link')).map(b => b.textContent.trim());
   ok(rail.some(t => t.includes('دانلود برنامه')), 'پیوندِ «دانلود برنامه» در منو هست');
