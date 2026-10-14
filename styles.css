@@ -1324,6 +1324,22 @@ a.act-card { text-decoration: none; }
 .page-hero-art { height: 280px; }
 .page-hero-art img { object-position: center; }
 
+.lesson-card.has-img { padding-top: 10px; }
+.lesson-thumb {
+  width: 100%;
+  height: 118px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 2px solid var(--ink);
+  background: var(--ink-soft, #F1E7D4);
+}
+.lesson-band { position: relative; overflow: hidden; }
+.lesson-band .lesson-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--r-img, 18px);
+}
 .lesson-band {
   height: 150px;
 }

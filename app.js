@@ -844,6 +844,16 @@
       </button>`;
   }
 
+  /* درس‌هایی که تصویر اختصاصی دارند (images/lessons/{id}.jpg و {id}-wide.jpg) */
+  const LESSON_IMAGES = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10'];
+
+  function lessonImg(id, opts) {
+    if (LESSON_IMAGES.indexOf(id) === -1) return '';
+    const o = opts || {};
+    const src = 'images/lessons/' + id + (o.wide ? '-wide' : '') + '.jpg';
+    return `<img class="lesson-img ${o.cls || ''}" src="${src}" alt="" loading="${o.eager ? 'eager' : 'lazy'}" referrerpolicy="no-referrer" onerror="this.style.display='none'">`;
+  }
+
   /* پیشرفتِ هر موضوع (برای نمایش در صفحه‌ی ورود) */
   function subjectProgress(sid) {
     const list = CURRICULUM[sid] || [];
@@ -1209,7 +1219,8 @@
       const p = state.progress.lessons[l.id];
       const done = p && p.done;
       return `
-      <button class="lesson-card reveal ${done ? 'is-done' : ''}" data-act="lesson" data-lesson="${l.id}">
+      <button class="lesson-card reveal ${done ? 'is-done' : ''} ${LESSON_IMAGES.indexOf(l.id) !== -1 ? 'has-img' : ''}" data-act="lesson" data-lesson="${l.id}">
+        ${lessonImg(l.id, { cls: 'lesson-thumb' })}
         <div class="lesson-meta">
           <span class="num-badge">${faDigits(i + 1)}</span>
           <span class="chip ${done ? 'is-done' : ''}">${done ? icon('check') + ' تکمیل‌شده' : faDigits(l.minutes || 8) + ' دقیقه'}</span>
@@ -1327,7 +1338,7 @@
         <header class="page-head">
           <button class="back-link" data-act="subject" data-subject="${subject}">${icon('arrow-right')} درس‌های ${s.title}</button>
           <figure class="img-frame lesson-band">
-            ${subjectArt(subject, { alt: '' })}
+            ${lessonImg(lesson.id, { wide: true, eager: true }) || subjectArt(subject, { alt: '' })}
           </figure>
           <h1 class="t-heading">${escapeHtml(lesson.title)}</h1>
           <div class="objective-banner">${icon('target')} <span>هدف یادگیری: ${escapeHtml(lesson.objective)}</span></div>
