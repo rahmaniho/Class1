@@ -868,7 +868,10 @@
   }
 
   /* درس‌هایی که نسخه‌ی عریض (سربرگ) دارند */
-  const LESSON_WIDE = ['m1', 'm2', 'm3', 'm4'];
+  const LESSON_WIDE = [
+    'm1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12',
+    'f0', 'f1'
+  ];
 
   function lessonBandImg(lesson, subject) {
     if (LESSON_WIDE.indexOf(lesson.id) !== -1) return lessonImg(lesson.id, { wide: true, eager: true });
