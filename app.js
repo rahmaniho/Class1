@@ -830,10 +830,10 @@
   }
 
   /* درس‌هایی که صدای توضیح دارند (audio/lessons/{id}.mp3) */
-  const LESSON_AUDIO = [
+    const LESSON_AUDIO = [
     'm1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12',
     's1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11', 's12',
-    'f0', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9'
+    'f0', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10', 'f11', 'f12', 'f13', 'f14'
   ];
 
   function lessonAudioHTML(lesson) {
