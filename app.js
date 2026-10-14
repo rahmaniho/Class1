@@ -830,9 +830,10 @@
   }
 
   /* درس‌هایی که صدای توضیح دارند (audio/lessons/{id}.mp3) */
-  const LESSON_AUDIO = [
+    const LESSON_AUDIO = [
     'm1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12',
-    's1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11', 's12'
+    's1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11', 's12',
+    'f0', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10', 'f11', 'f12', 'f13', 'f14'
   ];
 
   function lessonAudioHTML(lesson) {
@@ -840,7 +841,7 @@
     const spoken = (lesson.objective || '') + ' ' + ((lesson.teach && lesson.teach[0] && lesson.teach[0].text) || '');
     return `
       <button class="audio-btn lesson-audio" data-act="speak" data-text="${escapeHtml(spoken)}" data-audio="lessons/${lesson.id}" aria-label="شنیدن توضیح درس">
-        ${icon('speaker')} <span>توضیح درس را بشنو</span>
+        ${icon('speaker')} <span>توضیح کامل درس را بشنو</span>
       </button>`;
   }
 
@@ -1375,7 +1376,10 @@
             ${lessonBandImg(lesson, subject)}
           </figure>
           <h1 class="t-heading">${escapeHtml(lesson.title)}</h1>
-          <div class="objective-banner">${icon('target')} <span>هدف یادگیری: ${escapeHtml(lesson.objective)}</span></div>
+          <div class="objective-banner">
+            ${icon('target')} <span>هدف یادگیری: ${escapeHtml(lesson.objective)}</span>
+            <button class="obj-audio" data-act="speak" data-text="${escapeHtml(lesson.objective)}" data-audio="lessons/${lesson.id}" title="شنیدن هدف درس" aria-label="شنیدن هدف درس">${icon('speaker')}</button>
+          </div>
           <div class="lesson-audio-row">${lessonAudioHTML(lesson)}</div>
         </header>
 

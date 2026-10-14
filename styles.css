@@ -1584,3 +1584,27 @@ a.act-card { text-decoration: none; }
   .tree-draw { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
   .fly-chip { display: none; }
 }
+
+/* ---- دکمه‌ی شنیدنِ هدف درس ---- */
+.objective-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.obj-audio {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 150ms ease-out, background 150ms ease-out;
+}
+.obj-audio:hover { background: var(--yellow, #FFD45A); transform: translateY(-2px); }
+.obj-audio svg { width: 18px; height: 18px; }
+.lesson-audio-row { margin-top: 10px; }
