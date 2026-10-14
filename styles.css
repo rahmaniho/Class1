@@ -408,6 +408,14 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 .island-title { font-size: 32px; font-weight: 800; line-height: 1.2; }
 .island-tag { color: var(--ink); font-size: 18px; flex: 1; }
+.stage-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 14px;
+}
+.island-prog { margin: 6px 0 2px; }
+.island-prog .bar { margin-bottom: 6px; }
 .island-cta {
   display: inline-flex;
   align-items: center;
@@ -1128,6 +1136,82 @@ ul { margin: 0; padding: 0; list-style: none; }
   background: var(--ink);
   box-shadow: var(--shadow);
 }
+/* ---- کارت‌های ویدیوی آموزشی (تصویر واقعی آپارات) ---- */
+.act-card.video-card .act-ill {
+  position: relative;
+  overflow: hidden;
+  height: 150px;
+  background: var(--ink-soft, #F1E7D4);
+}
+.act-card.video-card .act-ill-art { display: flex; align-items: center; justify-content: center; }
+.act-thumb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--r-activity);
+}
+.act-thumb.is-broken { display: none; }
+.play-badge {
+  position: absolute;
+  inset-inline-end: 10px;
+  bottom: 10px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--coral);
+  border: 3px solid #fff;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(23, 33, 58, .28);
+}
+.play-badge svg { width: 18px; height: 18px; }
+.dur-badge {
+  position: absolute;
+  inset-inline-start: 10px;
+  bottom: 10px;
+  background: rgba(23, 33, 58, .82);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.video-cat { margin-bottom: 6px; display: inline-block; }
+
+/* ---- پخش‌کننده ---- */
+.video-frame { position: relative; }
+.video-frame .video-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--r-modal, 18px);
+  z-index: 1;
+}
+.video-frame .video-embed { position: relative; z-index: 2; }
+.video-frame .video-spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(23, 33, 58, .15);
+  border-top-color: var(--coral);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+  z-index: 1;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.video-frame.is-ready .video-poster,
+.video-frame.is-ready .video-spinner { display: none; }
+.video-hint { text-align: center; margin: 10px 0 0; }
+.video-modal .modal-head > div { flex: 1; }
+.video-modal .modal-head h2 { margin: 0; font-size: 22px; }
+
 .video-frame video {
   width: 100%;
   display: block;

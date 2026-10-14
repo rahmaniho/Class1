@@ -829,20 +829,51 @@
     return 'm1';
   }
 
+  /* درس‌هایی که صدای توضیح دارند (audio/lessons/{id}.mp3) */
+  const LESSON_AUDIO = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 's1', 's2', 's3', 's4'];
+
+  function lessonAudioHTML(lesson) {
+    if (LESSON_AUDIO.indexOf(lesson.id) === -1) return '';
+    const spoken = (lesson.objective || '') + ' ' + ((lesson.teach && lesson.teach[0] && lesson.teach[0].text) || '');
+    return `
+      <button class="audio-btn lesson-audio" data-act="speak" data-text="${escapeHtml(spoken)}" data-audio="lessons/${lesson.id}" aria-label="شنیدن توضیح درس">
+        ${icon('speaker')} <span>توضیح درس را بشنو</span>
+      </button>`;
+  }
+
+  /* پیشرفتِ هر موضوع (برای نمایش در صفحه‌ی ورود) */
+  function subjectProgress(sid) {
+    const list = CURRICULUM[sid] || [];
+    let done = 0;
+    for (let i = 0; i < list.length; i++) {
+      const p = state.progress.lessons[list[i].id];
+      if (p && p.done) done++;
+    }
+    return { done: done, total: list.length, pct: list.length ? Math.round((done / list.length) * 100) : 0 };
+  }
+
   function renderHome() {
     const cur = findLesson(currentLessonId());
     const subjects = ['math', 'farsi', 'science'];
+    const allProg = subjects.map(subjectProgress);
+    const doneAll = allProg.reduce((a, b) => a + b.done, 0);
+    const totalAll = allProg.reduce((a, b) => a + b.total, 0);
+    const featured = ['e78l931', 'myi4q6v', 'b411t82', 'jqh714a']
+      .map(id => APARAT_VIDEOS.find(v => v.id === id)).filter(Boolean);
     const islands = subjects.map((sid, i) => {
       const s = SUBJECTS[sid];
-      const n = CURRICULUM[sid].length;
+      const pr = subjectProgress(sid);
       return `
       <button class="island ${s.fieldClass} reveal d${i}" data-act="subject" data-subject="${sid}" aria-label="درس‌های ${s.title}">
         <div class="island-art">${subjectArt(sid)}</div>
         <div class="island-body">
           <div class="island-title">${s.title}</div>
           <div class="island-tag">${s.tagline}</div>
-          <div class="lesson-meta"><span class="chip">${faDigits(n)} درس</span></div>
-          <div class="island-cta">مشاهده‌ی درس‌ها
+          <div class="island-prog" aria-label="${faDigits(pr.done)} از ${faDigits(pr.total)} درس">
+            <div class="bar" aria-hidden="true"><span style="width:${pr.pct}%"></span></div>
+            <span class="t-label">${faDigits(pr.done)} از ${faDigits(pr.total)} درس تمام‌شده</span>
+          </div>
+          <div class="island-cta">${pr.done ? 'ادامه بده' : 'شروع کن'}
             <span class="arrow-dot">${icon('arrow-left')}</span>
           </div>
         </div>
@@ -898,9 +929,14 @@
             <span class="stage-kicker">${icon('sun')} مدرسه‌ی من · پایه‌ی اول</span>
             <h1 class="t-display">امروز چه چیزی یاد بگیریم؟</h1>
             <p class="stage-sub">هر روز کمی تمرین، کمی بازی، کلی کشف تازه</p>
+            <div class="stage-meta">
+              <span class="chip ${doneAll ? 'is-done' : ''}">${icon('star-yellow')} ${faDigits(doneAll)} از ${faDigits(totalAll)} درس تمام‌شده</span>
+              <span class="chip">${icon('play')} ویدیوهای آموزشی</span>
+            </div>
             <div class="stage-actions">
-              <button class="btn btn-primary" data-act="lesson" data-lesson="${cur ? cur.lesson.id : 'm1'}">${icon('play')} شروع یادگیری</button>
+              <button class="btn btn-primary" data-act="lesson" data-lesson="${cur ? cur.lesson.id : 'm1'}">${icon('play')} ${doneAll ? 'ادامه‌ی یادگیری' : 'شروع یادگیری'}</button>
               <button class="btn btn-secondary" data-act="subject" data-subject="math">${icon('book')} درس‌های امروز</button>
+              <button class="btn btn-quiet" data-act="adult">${icon('wrench')} بزرگ‌ترها</button>
             </div>
           </div>
           <div class="stage-art" id="stage-art">
@@ -940,6 +976,14 @@
           </button>
         </section>
 
+        <section class="section" aria-label="ویدیوهای آموزشی">
+          <div class="section-head">
+            <h2 class="t-heading">ویدیوهای آموزشی</h2>
+            <button class="btn btn-quiet" data-act="nav" data-hash="#/cinema">همه‌ی ویدیوها</button>
+          </div>
+          <div class="activity-row">${featured.map(videoCardHTML).join('')}</div>
+        </section>
+
         <section class="section" aria-label="فعالیت‌ها">
           <div class="section-head">
             <h2 class="t-heading">بازی و تمرین</h2>
@@ -961,38 +1005,69 @@
   /* ---------------------------------------------------------
      ویدیوهای آموزشی آپارات — پخش داخل برنامه
      --------------------------------------------------------- */
+  const APARAT_CDN = 'https://static.cdn.asset.aparat.cloud/avt/';
   const APARAT_VIDEOS = [
-    { id: 'e78l931', title: 'آموزش نوشتاری و تلفظ الفبای فارسی', desc: 'شکل نوشتاری و تلفظ حروف الفبا', art: 'lettercard', subjects: ['farsi'] },
-    { id: '2091511502462279680', short: true, title: 'آموزش الفبا — نسخه‌ی کوتاه', desc: 'مرور سریع نوشتاری و تلفظ الفبا', art: 'lettercard', subjects: ['farsi'] },
-    { id: 'w86s7l4', title: 'آموزش الفبا', desc: 'آموزش کامل حروف الفبای فارسی', art: 'shapes', subjects: ['farsi'] },
-    { id: 'q20d11z', title: 'الفبا و کلمات با قصه‌های کودکانه', desc: 'آموزش تصویری الفبا و کلمات با روایت داستانی', art: 'beanjar', subjects: ['farsi'] },
-    { id: 'ygd6y22', title: 'آموزش کلمات با تصاویر', desc: 'کلمه‌ها همراه تصاویر متنی', art: 'materials', subjects: ['farsi'] },
-    { id: 'pkec434', title: 'آهنگ لالایی کوچولو', desc: 'لالایی ملایم برای آرامش کودکان', art: 'sound', subjects: [] },
-    { id: 'icmg8ag', title: 'لالایی قشنگ', desc: 'یک لالایی دیگر برای خواب آرام', art: 'sound', subjects: [] },
-    { id: 'vyl6ve8', title: 'لالایی آرام', desc: 'آهنگ لالایی ملایم کودکانه', art: 'sound', subjects: [] },
-    { id: 'jqh714a', title: 'انیمیشن شاد مداد رنگی', desc: 'انیمیشن رنگی و شاد برای کودکان', art: 'pattern', subjects: [] },
-    { id: 'shiq3le', title: 'انیمیشن عروسک قشنگ من', desc: 'انیمیشن عروسکی دوست‌داشتنی', art: 'seasons', subjects: [] },
-    { id: 'b411t82', title: 'علوم: آبزیان', desc: 'ویدیوی آموزشی درباره‌ی جانداران آبزی', art: 'animals', subjects: ['science'] },
-    { id: 'myi4q6v', title: 'ریاضی: آموزش اعداد', desc: 'یادگیری اعداد برای ریاضی اول', art: 'numline', subjects: ['math'] }
+    { id: 'e78l931', cat: 'الفبا و نوشتار', title: 'آموزش نوشتاری و تلفظ الفبای فارسی', desc: 'شکل نوشتاری و تلفظ حروف الفبا', art: 'lettercard', duration: '۳۶:۰۲', poster: APARAT_CDN + '53902738-9465-l__5046.jpg?width=900&quality=90&secret=mxe5NxyOdtvZJnYEIJSeWw', subjects: ['farsi'] },
+    { id: '2091511502462279680', short: true, cat: 'الفبا و نوشتار', title: 'آموزش الفبا — نسخه‌ی کوتاه', desc: 'مرور سریع نوشتاری و تلفظ الفبا', art: 'lettercard', duration: '', poster: '', subjects: ['farsi'] },
+    { id: 'w86s7l4', cat: 'الفبا و نوشتار', title: 'آموزش الفبا', desc: 'آموزش کامل حروف الفبای فارسی', art: 'shapes', duration: '۲:۴۸', poster: APARAT_CDN + '54696720-5853-l__2333.jpg?width=900&quality=90&secret=oVhLo5115bpakgDEqTYlLg', subjects: ['farsi'] },
+    { id: 'q20d11z', cat: 'الفبا و نوشتار', title: 'الفبا و کلمات با قصه‌های کودکانه', desc: 'آموزش تصویری الفبا و کلمات با روایت داستانی', art: 'beanjar', duration: '۴:۰۶', poster: APARAT_CDN + '20234519-7047-l__5369.jpg?width=900&quality=90&secret=UsB6edCv7nNG751FUqsk2Q', subjects: ['farsi'] },
+    { id: 'ygd6y22', cat: 'الفبا و نوشتار', title: 'آموزش کلمات با تصاویر', desc: 'کلمه‌ها همراه تصاویر متنی', art: 'materials', duration: '۳۹:۳۳', poster: APARAT_CDN + '68390191-2864-l__3405.jpg?width=900&quality=90&secret=9YnZ-BhLgf5kzS1zcjzc5Q', subjects: ['farsi'] },
+    { id: 'pkec434', cat: 'شعر و لالایی', title: 'آهنگ لالایی کوچولو', desc: 'لالایی ملایم برای آرامش کودکان', art: 'sound', duration: '۳:۲۱', poster: APARAT_CDN + '68427720-8545-l__2294.jpg?width=900&quality=90&secret=v1ELOBUJezdyTAckuj7qKw', subjects: [] },
+    { id: 'icmg8ag', cat: 'شعر و لالایی', title: 'لالایی قشنگ', desc: 'یک لالایی دیگر برای خواب آرام', art: 'sound', duration: '۳:۲۳', poster: APARAT_CDN + '66792340-6977-l__4223.jpg?width=900&quality=90&secret=WbatldcWZaw72JcQsZUP_g', subjects: [] },
+    { id: 'vyl6ve8', cat: 'شعر و لالایی', title: 'لالایی آرام', desc: 'آهنگ لالایی ملایم کودکانه', art: 'sound', duration: '۲:۰۵', poster: APARAT_CDN + '62484190-9413-l__5262.jpg?width=900&quality=90&secret=RmeNOcQh2ckzyMnO7SHCZQ', subjects: [] },
+    { id: 'jqh714a', cat: 'انیمیشن', title: 'انیمیشن شاد مداد رنگی', desc: 'انیمیشن رنگی و شاد برای کودکان', art: 'pattern', duration: '۱:۰۲', poster: APARAT_CDN + '68463231-9620-l__9250.jpg?width=900&quality=90&secret=ARtd1s1Hd78Ny0bWXOdPMw', subjects: [] },
+    { id: 'shiq3le', cat: 'انیمیشن', title: 'انیمیشن عروسک قشنگ من', desc: 'انیمیشن عروسکی دوست‌داشتنی', art: 'seasons', duration: '۱:۰۶', poster: APARAT_CDN + '67679936-9315-l__1293.jpg?width=900&quality=90&secret=SCPxAr2WI6nIp198GLubqg', subjects: [] },
+    { id: 'b411t82', cat: 'علوم', title: 'علوم: آبزیان', desc: 'ویدیوی آموزشی درباره‌ی جانداران آبزی', art: 'animals', duration: '۳:۱۰', poster: APARAT_CDN + '54696688-5576-l__3399.jpg?width=900&quality=90&secret=PPKuj7cSxs0WzWnz_CbZPw', subjects: ['science'] },
+    { id: 'myi4q6v', cat: 'ریاضی', title: 'ریاضی: آموزش اعداد', desc: 'یادگیری اعداد برای ریاضی اول', art: 'numline', duration: '۱۵:۵۳', poster: APARAT_CDN + '63579356-4479-l__9284.jpg?width=900&quality=90&secret=vNzjLBCC44YpjrVl1aYxig', subjects: ['math'] }
   ];
+
+  const VIDEO_CATS = ['الفبا و نوشتار', 'شعر و لالایی', 'انیمیشن', 'ریاضی', 'علوم'];
+
+  /* آدرس رسمی پخشِ داخلی آپارات */
+  function aparatEmbed(v) {
+    return 'https://www.aparat.com/video/video/embed/videohash/' + v.id + '/vt/frame';
+  }
 
   function aparatUrl(v) {
     return v.short ? 'https://www.aparat.com/shorts/' + v.id : 'https://www.aparat.com/v/' + v.id;
   }
 
   function videoCardHTML(v) {
-    return `
-      <button class="act-card ext-card reveal" data-act="video" data-video="${v.id}" aria-label="پخش ${escapeHtml(v.title)}">
-        <div class="act-ill">${bigArtSVG(v.art)}</div>
+    const thumb = v.poster
+      ? `<img class="act-thumb" src="${v.poster}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.classList.add('is-broken')">`
+      : '';
+    const dur = v.duration ? `<span class="dur-badge">${v.duration}</span>` : '';
+    /* ویدیوهای کوتاه آپارات قابلیت پخش داخلی ندارند: در آپارات باز می‌شوند */
+    if (v.short) {
+      return `
+      <a class="act-card ext-card video-card reveal" href="${aparatUrl(v)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(v.title)}">
+        <div class="act-ill">
+          <span class="act-ill-art">${bigArtSVG(v.art)}</span>
+          <span class="play-badge">${icon('play')}</span>
+        </div>
         <div class="act-title">${v.title}</div>
         <div class="act-desc">${v.desc}</div>
-        <div class="act-link">${icon('play')} پخش ویدیو</div>
+        <div class="act-link">در آپارات ببین ${icon('arrow-left')}</div>
+      </a>`;
+    }
+    return `
+      <button class="act-card ext-card video-card reveal" data-act="video" data-video="${v.id}" aria-label="پخش ${escapeHtml(v.title)}">
+        <div class="act-ill">
+          <span class="act-ill-art">${bigArtSVG(v.art)}</span>
+          ${thumb}
+          <span class="play-badge">${icon('play')}</span>
+          ${dur}
+        </div>
+        <div class="act-title">${v.title}</div>
+        <div class="act-desc">${v.desc}</div>
+        <div class="act-link">${icon('play')} پخش در برنامه</div>
       </button>`;
   }
 
   function openVideoModal(videoId) {
     const v = APARAT_VIDEOS.find(x => x.id === videoId);
     if (!v) return;
+    if (v.short) { /* ویدیوی کوتاه: فقط در آپارات */ window.open(aparatUrl(v), '_blank', 'noopener'); return; }
     closeModal();
     const wrap = document.createElement('div');
     wrap.className = 'modal-backdrop';
@@ -1000,14 +1075,21 @@
     wrap.innerHTML = `
       <div class="modal video-modal" role="dialog" aria-modal="true" aria-labelledby="video-title">
         <div class="modal-head">
-          <h2 class="t-sub" id="video-title">${escapeHtml(v.title)}</h2>
+          <div>
+            <span class="chip video-cat">${v.cat || 'آموزشی'}${v.duration ? ' · ' + v.duration : ''}</span>
+            <h2 class="t-sub" id="video-title">${escapeHtml(v.title)}</h2>
+          </div>
           <button class="icon-btn" data-act="modal-close" aria-label="بستن">${icon('close')}</button>
         </div>
-        <div class="video-frame">
-          <iframe class="video-embed" src="https://www.aparat.com/embed/${v.id}" title="${escapeHtml(v.title)}"
-            allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
-            referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        <div class="video-frame" id="video-frame">
+          <div class="video-spinner" aria-hidden="true"></div>
+          ${v.poster ? `<img class="video-poster" src="${v.poster}" alt="" referrerpolicy="no-referrer">` : ''}
+          <iframe class="video-embed" src="${aparatEmbed(v)}" title="${escapeHtml(v.title)}"
+            allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen
+            loading="eager" referrerpolicy="no-referrer"
+            onload="this.closest('.video-frame').classList.add('is-ready')"></iframe>
         </div>
+        <p class="t-label video-hint">اگر ویدیو بالا نیامد، دکمه‌ی زیر را بزن تا در آپارات باز شود.</p>
         <div class="stage-actions">
           <a class="btn btn-secondary" href="${aparatUrl(v)}" target="_blank" rel="noopener noreferrer">تماشا در آپارات</a>
           <button class="btn btn-quiet" data-act="modal-close">بستن</button>
@@ -1246,6 +1328,7 @@
           </figure>
           <h1 class="t-heading">${escapeHtml(lesson.title)}</h1>
           <div class="objective-banner">${icon('target')} <span>هدف یادگیری: ${escapeHtml(lesson.objective)}</span></div>
+          <div class="lesson-audio-row">${lessonAudioHTML(lesson)}</div>
         </header>
 
         <div class="lesson-layout">
