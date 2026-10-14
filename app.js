@@ -1081,7 +1081,7 @@
 
   function videoCardHTML(v) {
     const thumb = v.poster
-      ? `<img class="act-thumb" src="${v.poster}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.classList.add('is-broken')">`
+      ? `<img class="act-thumb" src="${v.poster}" alt="" loading="lazy" onerror="this.classList.add('is-broken')">`
       : '';
     const dur = v.duration ? `<span class="dur-badge">${v.duration}</span>` : '';
     /* ویدیوهای کوتاه آپارات قابلیت پخش داخلی ندارند: در آپارات باز می‌شوند */
@@ -1094,6 +1094,7 @@
         </div>
         <div class="act-title">${v.title}</div>
         <div class="act-desc">${v.desc}</div>
+        <span class="card-badge">بدون پخش داخلی</span>
         <div class="act-link">در آپارات ببین ${icon('arrow-left')}</div>
       </a>`;
     }
@@ -1114,7 +1115,7 @@
   function openVideoModal(videoId) {
     const v = APARAT_VIDEOS.find(x => x.id === videoId);
     if (!v) return;
-    if (v.short) { /* ویدیوی کوتاه: فقط در آپارات */ window.open(aparatUrl(v), '_blank', 'noopener'); return; }
+    if (v.short) { /* ویدیوی کوتاه آپارات کدِ embed ندارد */ window.open(aparatUrl(v), '_blank', 'noopener'); return; }
     closeModal();
     const wrap = document.createElement('div');
     wrap.className = 'modal-backdrop';
@@ -1130,19 +1131,42 @@
         </div>
         <div class="video-frame" id="video-frame">
           <div class="video-spinner" aria-hidden="true"></div>
-          ${v.poster ? `<img class="video-poster" src="${v.poster}" alt="" referrerpolicy="no-referrer">` : ''}
+          ${v.poster ? `<img class="video-poster" src="${v.poster}" alt="">` : ''}
           <iframe class="video-embed" src="${aparatEmbed(v)}" title="${escapeHtml(v.title)}"
-            allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen
-            loading="eager" referrerpolicy="no-referrer"
-            onload="this.closest('.video-frame').classList.add('is-ready')"></iframe>
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            allowfullscreen webkitallowfullscreen mozallowfullscreen
+            frameborder="0" scrolling="no"></iframe>
         </div>
-        <p class="t-label video-hint">اگر ویدیو بالا نیامد، دکمه‌ی زیر را بزن تا در آپارات باز شود.</p>
+        <div class="video-error" hidden>
+          <p class="t-label">ویدیو داخل برنامه بالا نیامد. دوباره تلاش کن؛ اگر باز هم نیامد اینترنت را بررسی کن.</p>
+          <div class="stage-actions">
+            <button class="btn btn-primary" data-act="video-retry" data-video="${v.id}">${icon('play')} تلاشِ دوباره در برنامه</button>
+            <a class="btn btn-quiet" href="${aparatUrl(v)}" target="_blank" rel="noopener noreferrer">آخرین راه: در آپارات</a>
+          </div>
+        </div>
         <div class="stage-actions">
-          <a class="btn btn-secondary" href="${aparatUrl(v)}" target="_blank" rel="noopener noreferrer">تماشا در آپارات</a>
+          <button class="btn btn-secondary" data-act="video-full">${icon('play')} تمام‌صفحه در برنامه</button>
           <button class="btn btn-quiet" data-act="modal-close">بستن</button>
         </div>
       </div>`;
     document.body.appendChild(wrap);
+
+    /* نگهبان: اگر پلیر تا چند ثانیه نیامد، پیامِ داخل برنامه نشان داده می‌شود (نه ارجاع به بیرون) */
+    const frame = wrap.querySelector('.video-frame');
+    const ifr = wrap.querySelector('iframe');
+    let ready = false;
+    if (ifr) {
+      ifr.addEventListener('load', function () {
+        ready = true;
+        if (frame) frame.classList.add('is-ready');
+      });
+    }
+    setTimeout(function () {
+      if (ready || !document.body.contains(wrap)) return;
+      if (frame) frame.classList.add('is-failed');
+      const err = wrap.querySelector('.video-error');
+      if (err) err.hidden = false;
+    }, 7000);
   }
 
   /* ---------------------------------------------------------
@@ -2437,6 +2461,17 @@
       case 'video':
         openVideoModal(t.dataset.video);
         break;
+      case 'video-retry':
+        openVideoModal(t.dataset.video);
+        break;
+      case 'video-full': {
+        const fr = document.querySelector('#modal-root .video-frame');
+        if (fr) {
+          const req = fr.requestFullscreen || fr.webkitRequestFullscreen || fr.msRequestFullscreen;
+          if (req) { try { req.call(fr); } catch (e) { /* نادیده گرفته می‌شود */ } }
+        }
+        break;
+      }
       case 'install-open':
         openInstallModal();
         break;
