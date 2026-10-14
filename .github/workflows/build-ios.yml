@@ -37,9 +37,16 @@ jobs:
       - name: ساخت پروژه‌ی آی‌او‌اس
         run: npx cap add ios
 
-      - name: آیکون و صفحه‌ی آغازین
-        continue-on-error: true
-        run: npx capacitor-assets generate --ios --icon-path resources/icon.png --splash-path resources/splash.png --icon-background-source '#FFF8EA' --splash-background-source '#FFF8EA'
+      - name: آیکون و صفحه‌ی آغازینِ iOS
+        run: npx capacitor-assets generate --ios --assetPath resources --iconBackgroundColor '#FFF8EA' --splashBackgroundColor '#FFF8EA'
+
+      - name: اطمینان از آیکونِ برنامه
+        run: |
+          SET=ios/App/App/Assets.xcassets/AppIcon.appiconset
+          test -s "$SET/AppIcon-512@2x.png" || { echo "::error::آیکونِ iOS ساخته نشد"; exit 1; }
+          test -s ios/App/App/Assets.xcassets/Splash.imageset/Default@3x~universal~anyany.png
+          echo "آیکون و صفحه‌ی آغازینِ iOS از resources/icon.png ساخته شد"
+          ls -la "$SET"
 
       - name: همگام‌سازی فایل‌های وب
         run: npx cap sync ios

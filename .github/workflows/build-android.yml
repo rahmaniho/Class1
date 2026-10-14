@@ -40,9 +40,33 @@ jobs:
       - name: ساخت پروژه‌ی اندروید
         run: npx cap add android
 
-      - name: آیکون و صفحه‌ی آغازین
-        continue-on-error: true
-        run: npx capacitor-assets generate --android --icon-path resources/icon.png --splash-path resources/splash.png --icon-background-source '#FFF8EA' --splash-background-source '#FFF8EA'
+      - name: آیکون و صفحه‌ی آغازینِ اندروید
+        run: node scripts/make-android-icons.mjs
+
+      - name: اطمینان از آیکونِ برنامه
+        run: |
+          RES=android/app/src/main/res
+          for f in \
+            mipmap-xxxhdpi/ic_launcher.png \
+            mipmap-xxxhdpi/ic_launcher_round.png \
+            mipmap-xxxhdpi/ic_launcher_foreground.png \
+            mipmap-xxxhdpi/ic_launcher_background.png \
+            mipmap-anydpi-v26/ic_launcher.xml \
+            mipmap-anydpi-v26/ic_launcher_round.xml \
+            drawable/splash.png \
+            drawable-port-xxxhdpi/splash.png ; do
+            test -s "$RES/$f" || { echo "::error::آیکون ساخته نشد: $f"; exit 1; }
+          done
+          grep -q ic_launcher_foreground "$RES/mipmap-anydpi-v26/ic_launcher.xml"
+          echo "آیکونِ برنامه از images/icons/class1.png ساخته شد:"
+          ls -la "$RES/mipmap-xxxhdpi"
+
+      - name: بارگذاریِ آیکون‌ها برای بازبینی
+        uses: actions/upload-artifact@v4
+        with:
+          name: madrese-man-android-icons
+          path: android/app/src/main/res/mipmap-*
+          retention-days: 30
 
       - name: همگام‌سازی فایل‌های وب
         run: npx cap sync android
