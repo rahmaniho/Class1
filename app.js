@@ -1041,6 +1041,8 @@
           <div class="activity-row">${acts}</div>
         </section>
 
+        ${sponsorCardHTML()}
+
         <footer class="foot-note">
           <span class="foot-group">
             <span>مدرسه‌ی من · آموزش ریاضی، فارسی و علوم پایه‌ی اول</span>
@@ -1544,6 +1546,14 @@
             </div>
           </aside>
         </div>
+
+        <footer class="foot-note">
+          <span class="foot-group">
+            <span>مدرسه‌ی من · ${escapeHtml(lesson.title)} — ${s.title} پایه‌ی اول</span>
+            ${karenCreditHTML()}
+          </span>
+          <span>ساخته‌شده برای یادگیری شاد و آرام</span>
+        </footer>
       </div>`;
   }
 
@@ -2005,6 +2015,14 @@
           </div>
         </header>
         <div class="activity-row">${cards}</div>
+
+        <footer class="foot-note">
+          <span class="foot-group">
+            <span>مدرسه‌ی من · بازی‌های آموزشی پایه‌ی اول</span>
+            ${karenCreditHTML()}
+          </span>
+          <span>ساخته‌شده برای یادگیری شاد و آرام</span>
+        </footer>
       </div>`;
   }
 
@@ -2209,6 +2227,10 @@
           <li class="t-label" style="line-height:1.9">• از او بخواهید صدای حروف و اعداد را بلند بگوید.</li>
           <li class="t-label" style="line-height:1.9">• پاسخ اشتباه را با مهربانی به فرصت یادگیری تبدیل کنید.</li>
         </ul>
+        <div class="sponsor-mini">
+          ${icon('heart')}
+          <span>این برنامه با حمایت مالیِ ${SPONSOR.name}، ${SPONSOR.role}، ساخته شده است · ${SPONSOR.audience}</span>
+        </div>
         <div class="stage-actions">
           <button class="btn btn-secondary" data-act="nav" data-hash="#/progress">صفحه‌ی پیشرفت</button>
           <button class="btn btn-secondary" data-act="install-open">نصب برنامه روی دستگاه</button>
@@ -2284,14 +2306,44 @@
   }
 
   /* ---------------------------------------------------------
+     حامیِ برنامه و ویژه‌بودنِ آن برای پایه‌ی اول
+     --------------------------------------------------------- */
+  const SPONSOR = {
+    name: 'سرکار خانم لیلا آبکه',
+    role: 'وکیل پایه یک دادگستری',
+    credit: 'این برنامه با حمایت مالیِ سرکار خانم لیلا آبکه، وکیل پایه یک دادگستری، ساخته شده است.',
+    audience: 'ویژه‌ی پایه‌ی اولِ دبستان شهید قاسمی',
+    dedication: 'تقدیم به دبستان شهید قاسمی مهرگان'
+  };
+
+  /* کارتِ حامی — صفحه‌ی خانه */
+  function sponsorCardHTML() {
+    return `
+      <section class="sponsor-card reveal" aria-label="حامیِ برنامه">
+        <span class="sponsor-heart" aria-hidden="true">${icon('heart')}</span>
+        <div class="sponsor-body">
+          <p class="sponsor-kicker">حامیِ گرامیِ این برنامه</p>
+          <p class="sponsor-name">${SPONSOR.name}</p>
+          <p class="sponsor-role">${SPONSOR.role}</p>
+          <p class="sponsor-lead">این برنامه با حمایت مالیِ ایشان ساخته شده است.</p>
+        </div>
+        <p class="sponsor-audience">${icon('star-yellow')} ${SPONSOR.audience}</p>
+      </section>`;
+  }
+
+  /* ---------------------------------------------------------
      خط تقدیم — زیر فوتر همه‌ی صفحات
      --------------------------------------------------------- */
   function dedicationHTML() {
     return `
-      <div class="dedication-line" role="note">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="${STAR_POINTS}" fill="#FFD45A" stroke="#17213A" stroke-width="1.6" stroke-linejoin="round"/></svg>
-        تقدیم به دبستان شهید قاسمی مهرگان
-        <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="${STAR_POINTS}" fill="#FFD45A" stroke="#17213A" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      <div class="dedi-block" role="note">
+        <div class="dedication-line">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="${STAR_POINTS}" fill="#FFD45A" stroke="#17213A" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          ${SPONSOR.dedication}
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="${STAR_POINTS}" fill="#FFD45A" stroke="#17213A" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="dedi-sub">${SPONSOR.audience}</div>
+        <div class="sponsor-line">${icon('heart')} ${SPONSOR.credit}</div>
       </div>`;
   }
 
@@ -2299,7 +2351,7 @@
     /* خط تقدیم زیر هر فوتر */
     $$('.foot-note').forEach(f => {
       const nxt = f.nextElementSibling;
-      if (!nxt || !nxt.classList.contains('dedication-line')) {
+      if (!nxt || !nxt.classList.contains('dedi-block')) {
         f.insertAdjacentHTML('afterend', dedicationHTML());
       }
     });
