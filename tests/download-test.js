@@ -35,7 +35,8 @@ const ok = (c, n) => { if (c) { pass++; console.log('  ✓ ' + n); } else { fail
   const wfK = fs.readFileSync(ROOT + '/.github/workflows/generate-keystore.yml', 'utf8');
   ok(/keytool -genkeypair/.test(wfK), 'خطِ تولیدِ کلیدِ امضا، کلید می‌سازد');
   ok(/madrese-man-keystore/.test(wfK), 'کلید به‌صورت artifact بارگذاری می‌شود');
-  ok(/secrets\.ANDROID_KEYSTORE_BASE64 != ''/.test(wfA), 'امضای رسمی فقط وقتی کلید هست اجرا می‌شود');
+  ok(/steps\.emza\.outputs\.has_key == 'true'/.test(wfA), 'امضای رسمی فقط وقتی کلید هست اجرا می‌شود');
+  ok(!/if:.*secrets\./.test(wfA), 'شرطِ if از secrets استفاده نمی‌کند (GitHub آن را نمی‌پذیرد)');
   ok(/assembleRelease/.test(wfA) && /bundleRelease/.test(wfA), 'نسخه‌ی امضاشده (APK و AAB) ساخته می‌شود');
   ok(/assembleDebug/.test(wfA), 'اگر کلید نباشد، نسخه‌ی آزمایشی ساخته می‌شود');
   ok(/madrese-man-android\.\*/.test(wfA), 'انتشار شاملِ APK و AAB است');
