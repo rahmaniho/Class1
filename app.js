@@ -848,8 +848,16 @@
   const LESSON_IMAGES = [
     'm1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12',
     'f0', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10', 'f11', 'f12', 'f13', 'f14',
-    's1', 's2', 's3'
+    's1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11', 's12'
   ];
+
+  /* بازی‌هایی که تصویر اختصاصی دارند (images/games/{id}.jpg) */
+  const GAME_IMAGES = ['g-count'];
+
+  function gameImg(id) {
+    if (GAME_IMAGES.indexOf(id) === -1) return '';
+    return `<img class="act-thumb" src="images/games/${id}.jpg" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">`;
+  }
 
   function lessonImg(id, opts) {
     if (LESSON_IMAGES.indexOf(id) === -1) return '';
@@ -1817,7 +1825,10 @@
   function renderGames() {
     const cards = GAMES.map(g => `
       <button class="act-card reveal" data-act="game" data-game="${g.id}">
-        <div class="act-ill">${bigArtSVG(g.subject === 'math' ? 'pattern' : (g.subject === 'farsi' ? 'lettercard' : 'beanjar'))}</div>
+        <div class="act-ill">
+          ${bigArtSVG(g.subject === 'math' ? 'pattern' : (g.subject === 'farsi' ? 'lettercard' : 'beanjar'))}
+          ${gameImg(g.id)}
+        </div>
         <div class="act-title">${g.title}</div>
         <div class="act-desc">${g.description}</div>
         <div class="act-link">شروع بازی ${icon('arrow-left')}</div>

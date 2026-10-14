@@ -1136,6 +1136,9 @@ ul { margin: 0; padding: 0; list-style: none; }
   background: var(--ink);
   box-shadow: var(--shadow);
 }
+/* ---- کارت‌های تصویر‌دار (درس‌ها و بازی‌ها) ---- */
+.act-card .act-ill { position: relative; overflow: hidden; }
+
 /* ---- کارت‌های ویدیوی آموزشی (تصویر واقعی آپارات) ---- */
 .act-card.video-card .act-ill {
   position: relative;
