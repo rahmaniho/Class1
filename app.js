@@ -841,7 +841,7 @@
     const spoken = (lesson.objective || '') + ' ' + ((lesson.teach && lesson.teach[0] && lesson.teach[0].text) || '');
     return `
       <button class="audio-btn lesson-audio" data-act="speak" data-text="${escapeHtml(spoken)}" data-audio="lessons/${lesson.id}" aria-label="شنیدن توضیح درس">
-        ${icon('speaker')} <span>توضیح درس را بشنو</span>
+        ${icon('speaker')} <span>توضیح کامل درس را بشنو</span>
       </button>`;
   }
 
@@ -1376,7 +1376,10 @@
             ${lessonBandImg(lesson, subject)}
           </figure>
           <h1 class="t-heading">${escapeHtml(lesson.title)}</h1>
-          <div class="objective-banner">${icon('target')} <span>هدف یادگیری: ${escapeHtml(lesson.objective)}</span></div>
+          <div class="objective-banner">
+            ${icon('target')} <span>هدف یادگیری: ${escapeHtml(lesson.objective)}</span>
+            <button class="obj-audio" data-act="speak" data-text="${escapeHtml(lesson.objective)}" data-audio="lessons/${lesson.id}" title="شنیدن هدف درس" aria-label="شنیدن هدف درس">${icon('speaker')}</button>
+          </div>
           <div class="lesson-audio-row">${lessonAudioHTML(lesson)}</div>
         </header>
 
