@@ -1608,3 +1608,27 @@ a.act-card { text-decoration: none; }
 .obj-audio:hover { background: var(--yellow, #FFD45A); transform: translateY(-2px); }
 .obj-audio svg { width: 18px; height: 18px; }
 .lesson-audio-row { margin-top: 10px; }
+
+/* ---- پخش‌کننده‌ی داخل برنامه: تلاش دوباره و تمام‌صفحه ---- */
+.video-frame.is-failed .video-embed,
+.video-frame.is-failed .video-spinner { display: none; }
+.video-frame.is-failed { min-height: 200px; }
+.video-error {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 2px dashed var(--coral);
+  border-radius: 14px;
+  background: #FFF6F4;
+}
+.video-error[hidden] { display: none; }
+.video-error .t-label { margin: 0 0 10px; }
+.card-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #F1E7D4;
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
