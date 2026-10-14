@@ -847,7 +847,8 @@
   /* درس‌هایی که تصویر اختصاصی دارند (images/lessons/{id}.jpg و {id}-wide.jpg) */
   const LESSON_IMAGES = [
     'm1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12',
-    'f0', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7'
+    'f0', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10', 'f11', 'f12', 'f13', 'f14',
+    's1', 's2', 's3'
   ];
 
   function lessonImg(id, opts) {
