@@ -117,11 +117,25 @@ npm run build:web
 # پروژه‌ی اندروید و ساختِ APK (نیاز: Java 17 و Android SDK)
 npm install
 npx cap add android
+node scripts/make-android-icons.mjs    # ساختِ آیکون و صفحه‌ی آغازین
 npx cap sync android
 cd android && ./gradlew assembleDebug
 ```
 
 خروجی: `android/app/build/outputs/apk/debug/app-debug.apk`
+
+---
+
+## آیکونِ برنامه
+
+آیکونِ نصبی از یک فایل می‌آید: **`images/icons/class1.png`**.
+
+- اسکریپتِ `scripts/make-android-icons.mjs` همان تصویر را به آیکونِ اندروید تبدیل می‌کند:
+  آیکونِ معمولی، آیکونِ گرد، آیکونِ انطباقی (با حاشیه‌ی امن که زیرِ ماسکِ گردِ اندروید چیزی بُریده نشود)
+  و صفحه‌ی آغازین با زمینه‌ی کرم.
+- برای آیفون، `resources/icon.png` (ساخته‌شده از همان فایل) به‌کار می‌رود.
+- اگر خواستید آیکون را عوض کنید، کافی است `images/icons/class1.png` را جایگزین کنید و سپس
+  `npm run icons` و `node scripts/make-android-icons.mjs` را اجرا کنید.
 
 ---
 
