@@ -600,8 +600,12 @@
       alt: 'مدال کاغذی، بادکنک و ستاره‌های رنگی برای جشن یادگیری'
     },
     install: {
-      src: 'images/hero-world.jpg',
-      alt: 'برنامه‌ی مدرسه‌ی من روی دستگاه‌های مختلف'
+      src: 'images/icons/icon-512.png',
+      alt: 'آیکونِ برنامه‌ی مدرسه‌ی من'
+    },
+    appIcon: {
+      src: 'images/icons/icon-512.png',
+      alt: 'آیکونِ برنامه‌ی مدرسه‌ی من'
     }
   };
 
@@ -2358,6 +2362,12 @@
   /* ---------------------------------------------------------
      خط تقدیم — زیر فوتر همه‌ی صفحات
      --------------------------------------------------------- */
+  /* حق‌نشرِ دیداری — زیرِ هر فوتر */
+  const COPYRIGHT = {
+    line: '© ۱۴۰۴ مدرسه‌ی من · همه‌ی حقوق محفوظ است',
+    note: 'بازنشر، کپی‌برداری یا استفاده‌ی تجاری از محتوای این برنامه بدون اجازه‌ی کتبی مجاز نیست.'
+  };
+
   function dedicationHTML() {
     return `
       <div class="dedi-block" role="note">
@@ -2368,6 +2378,9 @@
         </div>
         <div class="dedi-sub">${SPONSOR.audience}</div>
         <div class="sponsor-line">${icon('heart')} ${SPONSOR.credit}</div>
+        <p class="copyright-line">
+          <small>${COPYRIGHT.line} · ${COPYRIGHT.note}</small>
+        </p>
       </div>`;
   }
 
@@ -2470,8 +2483,8 @@
               <h1 class="t-display">مدرسه‌ی من را همیشه همراهت داشته باش</h1>
               <p class="t-body measure">یک‌بار نصب کن؛ بعد از آن درس‌ها، تمرین‌ها، صداها و تصویرها حتی بدون اینترنت کار می‌کنند.</p>
             </div>
-            <figure class="img-frame page-hero-art">
-              ${artImg('install', { fallback: shareArrowSVG(), fallbackDisplay: 'flex', alt: 'نصبِ برنامه روی دستگاه' })}
+            <figure class="img-frame page-hero-art install-hero">
+              ${artImg('appIcon', { eager: true, fallback: shareArrowSVG(), fallbackDisplay: 'flex', alt: 'آیکونِ برنامه‌ی مدرسه‌ی من' })}
             </figure>
           </div>
         </header>
@@ -2518,9 +2531,38 @@
     }
   }
 
+  /* ---------------------------------------------------------
+     بازدارنده‌های کپی‌برداری
+     این‌ها جلویِ کپیِ ساده (راست‌کلیک، کشیدنِ تصویر، ذخیره) را
+     می‌گیرند؛ امنیتِ قطعی نیستند و فقط استفاده‌ی غیرمجاز را سخت می‌کنند.
+     --------------------------------------------------------- */
+  function protectAssets() {
+    /* تصویرها: بدون راست‌کلیک و بدون کشیدن‌دادن */
+    document.addEventListener('contextmenu', (ev) => {
+      const t = ev.target;
+      if (t && (t.tagName === 'IMG' || t.tagName === 'SVG' || t.closest('.img-frame'))) {
+        ev.preventDefault();
+      }
+    });
+    document.addEventListener('dragstart', (ev) => {
+      const t = ev.target;
+      if (t && t.tagName === 'IMG') ev.preventDefault();
+    });
+    /* کلیدهای میان‌برِ نمایشِ کد و ذخیره‌ی صفحه */
+    document.addEventListener('keydown', (ev) => {
+      const k = (ev.key || '').toLowerCase();
+      if ((ev.ctrlKey || ev.metaKey) && (k === 'u' || k === 's')) {
+        ev.preventDefault();
+      }
+    });
+    /* ویژگیِ ضدِ کشیدن روی تصویرهای تازه */
+    $$('img').forEach(img => { if (!img.hasAttribute('draggable')) img.setAttribute('draggable', 'false'); });
+  }
+
   function afterRender() {
     /* در صفحه‌های باریک: گامِ جاری را در فهرستِ افقی وسط بیاور */
     keepStepChipVisible();
+    protectAssets();
     /* خط تقدیم زیر هر فوتر */
     $$('.foot-note').forEach(f => {
       const nxt = f.nextElementSibling;
