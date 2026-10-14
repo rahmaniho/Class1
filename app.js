@@ -845,7 +845,10 @@
   }
 
   /* درس‌هایی که تصویر اختصاصی دارند (images/lessons/{id}.jpg و {id}-wide.jpg) */
-  const LESSON_IMAGES = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10'];
+  const LESSON_IMAGES = [
+    'm1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12',
+    'f0', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7'
+  ];
 
   function lessonImg(id, opts) {
     if (LESSON_IMAGES.indexOf(id) === -1) return '';
@@ -1670,6 +1673,29 @@
     return act ? { act, idx, lesson: found.lesson, subject: found.subject } : null;
   }
 
+  /* ---------------------------------------------------------
+     صدای تشویق هنگام پاسخ درست (و دلگرمی برای تلاش دوباره)
+     --------------------------------------------------------- */
+  const PRAISE_WORDS = [
+    'آفرین! پاسخت درست بود. تو داری خیلی خوب یاد می‌گیری.',
+    'به‌به! چه پاسخ قشنگی. تو یک قهرمان کوچولویی!',
+    'عالی بود! درست گفتی. بیا برویم سراغ یکی دیگر.',
+    'آفرین به تو! ستاره‌ی امروز را گرفتی. دستت درد نکند.',
+    'درست بود! چقدر خوب فکر کردی. من به تو افتخار می‌کنم.'
+  ];
+  const RETRY_WORD = 'نترس، یک بار دیگر امتحان کن. تو می‌توانی، من کنارت هستم.';
+  let praiseTurn = 0;
+
+  function playPraise(correct) {
+    if (correct) {
+      const n = (praiseTurn % PRAISE_WORDS.length) + 1;
+      praiseTurn += 1;
+      playSound(PRAISE_WORDS[n - 1], 'praise/afarin-' + n);
+    } else {
+      playSound(RETRY_WORD, 'praise/retry-1');
+    }
+  }
+
   function handleAnswer(value, btn) {
     const ctx = currentActivity();
     if (!ctx) return;
@@ -1725,6 +1751,9 @@
         slot.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       }
     }
+
+    /* تشویقِ صوتی: «آفرین!» برای پاسخ درست، دلگرمی برای تلاش دوباره */
+    playPraise(correct);
   }
 
   function explanationFor(act, optData) {
