@@ -1632,3 +1632,15 @@ a.act-card { text-decoration: none; }
   font-size: 12px;
   font-weight: 800;
 }
+
+/* ---- پلیرِ خود برنامه (پخش با <video>) ---- */
+.video-frame .video-native {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: block;
+  background: var(--ink);
+  border-radius: var(--r-modal, 18px);
+}
+.video-frame.is-loading .video-native { display: none; }
+.video-frame.is-native .video-poster,
+.video-frame.is-native .video-spinner { display: none; }

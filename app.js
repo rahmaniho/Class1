@@ -1112,6 +1112,80 @@
       </button>`;
   }
 
+  /* ---------------------------------------------------------
+     پخش با پلیرِ خود برنامه: گرفتن لینک مستقیم ویدیو از API آپارات
+     اگر این مسیر در دسترس نبود، همان پلیرِ embedِ آپارات در داخل
+     برنامه نشان داده می‌شود (در هر دو حالت خروج از برنامه نداریم).
+     --------------------------------------------------------- */
+  const aparatSrcCache = {};
+
+  function jwtExp(url) {
+    try {
+      const m = /wmsAuthSign=([^&]+)/.exec(url);
+      if (!m) return 0;
+      const pad = m[1].split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      const json = JSON.parse(atob(pad));
+      return (json.exp || 0) * 1000;
+    } catch (e) { return 0; }
+  }
+
+  function cachedAparatSrc(id) {
+    const now = Date.now();
+    if (aparatSrcCache[id] && aparatSrcCache[id].exp > now + 60000) return aparatSrcCache[id].url;
+    try {
+      const raw = sessionStorage.getItem('aparat-src-' + id);
+      if (raw) {
+        const o = JSON.parse(raw);
+        if (o.exp > now + 60000) { aparatSrcCache[id] = o; return o.url; }
+        sessionStorage.removeItem('aparat-src-' + id);
+      }
+    } catch (e) { /* نادیده گرفته می‌شود */ }
+    return '';
+  }
+
+  function saveAparatSrc(id, url) {
+    const o = { url: url, exp: jwtExp(url) || (Date.now() + 3600000) };
+    aparatSrcCache[id] = o;
+    try { sessionStorage.setItem('aparat-src-' + id, JSON.stringify(o)); } catch (e) { /* نادیده گرفته می‌شود */ }
+  }
+
+  function pickQuality(list) {
+    if (!list || !list.length) return '';
+    const order = ['480p', '360p', '240p', '720p', '144p'];
+    for (let i = 0; i < order.length; i++) {
+      for (let j = 0; j < list.length; j++) {
+        if (list[j].profile === order[i] && list[j].urls && list[j].urls[0]) return list[j].urls[0];
+      }
+    }
+    for (let j = 0; j < list.length; j++) {
+      if (list[j].urls && list[j].urls[0]) return list[j].urls[0];
+    }
+    return '';
+  }
+
+  function resolveAparatFile(id) {
+    const cached = cachedAparatSrc(id);
+    if (cached) return Promise.resolve(cached);
+    if (typeof fetch !== 'function') return Promise.resolve('');
+    return fetch('https://www.aparat.com/api/fa/v1/video/video/show/videohash/' + id,
+      { headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        const attrs = j && j.data && j.data.attributes;
+        const url = pickQuality(attrs && attrs.file_link_all);
+        if (url) saveAparatSrc(id, url);
+        return url || '';
+      })
+      .catch(function () { return ''; });
+  }
+
+  function withTimeout(promise, ms) {
+    return Promise.race([
+      promise,
+      new Promise(function (res) { setTimeout(function () { res(''); }, ms); })
+    ]);
+  }
+
   function openVideoModal(videoId) {
     const v = APARAT_VIDEOS.find(x => x.id === videoId);
     if (!v) return;
@@ -1129,13 +1203,10 @@
           </div>
           <button class="icon-btn" data-act="modal-close" aria-label="بستن">${icon('close')}</button>
         </div>
-        <div class="video-frame" id="video-frame">
+        <div class="video-frame is-loading" id="video-frame">
           <div class="video-spinner" aria-hidden="true"></div>
           ${v.poster ? `<img class="video-poster" src="${v.poster}" alt="">` : ''}
-          <iframe class="video-embed" src="${aparatEmbed(v)}" title="${escapeHtml(v.title)}"
-            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-            allowfullscreen webkitallowfullscreen mozallowfullscreen
-            frameborder="0" scrolling="no"></iframe>
+          <video class="video-native" playsinline controls preload="none" ${v.poster ? `poster="${v.poster}"` : ''}></video>
         </div>
         <div class="video-error" hidden>
           <p class="t-label">ویدیو داخل برنامه بالا نیامد. دوباره تلاش کن؛ اگر باز هم نیامد اینترنت را بررسی کن.</p>
@@ -1151,22 +1222,56 @@
       </div>`;
     document.body.appendChild(wrap);
 
-    /* نگهبان: اگر پلیر تا چند ثانیه نیامد، پیامِ داخل برنامه نشان داده می‌شود (نه ارجاع به بیرون) */
     const frame = wrap.querySelector('.video-frame');
-    const ifr = wrap.querySelector('iframe');
+    const vid = wrap.querySelector('video.video-native');
+    const errBox = wrap.querySelector('.video-error');
     let ready = false;
-    if (ifr) {
+
+    function showError() {
+      if (ready || !document.body.contains(wrap)) return;
+      frame.classList.remove('is-loading');
+      frame.classList.add('is-failed');
+      if (errBox) errBox.hidden = false;
+    }
+
+    function useEmbed() {
+      if (!document.body.contains(wrap)) return;
+      if (wrap.querySelector('iframe')) return;
+      const ifr = document.createElement('iframe');
+      ifr.className = 'video-embed';
+      ifr.setAttribute('src', aparatEmbed(v));
+      ifr.setAttribute('title', v.title);
+      ifr.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; fullscreen');
+      ifr.setAttribute('allowfullscreen', 'true');
+      ifr.setAttribute('frameborder', '0');
+      ifr.setAttribute('scrolling', 'no');
       ifr.addEventListener('load', function () {
         ready = true;
-        if (frame) frame.classList.add('is-ready');
+        frame.classList.remove('is-loading');
+        frame.classList.add('is-ready');
       });
+      if (vid) vid.style.display = 'none';
+      frame.appendChild(ifr);
+      frame.classList.remove('is-failed');
+      if (errBox) errBox.hidden = true;
+      setTimeout(showError, 9000);
     }
-    setTimeout(function () {
-      if (ready || !document.body.contains(wrap)) return;
-      if (frame) frame.classList.add('is-failed');
-      const err = wrap.querySelector('.video-error');
-      if (err) err.hidden = false;
-    }, 7000);
+
+    /* ۱) تلاش برای پخش با پلیرِ خود برنامه */
+    withTimeout(resolveAparatFile(v.id), 4500).then(function (url) {
+      if (!url || !document.body.contains(wrap)) { useEmbed(); return; }
+      ready = true;
+      frame.classList.remove('is-loading');
+      frame.classList.add('is-ready', 'is-native');
+      if (vid) {
+        vid.addEventListener('error', function () { ready = false; useEmbed(); });
+        try {
+          vid.src = url;
+          const pr = vid.play();
+          if (pr && typeof pr.catch === 'function') pr.catch(function () { /* کاربر شروع می‌کند */ });
+        } catch (e) { ready = false; useEmbed(); }
+      }
+    }).catch(function () { useEmbed(); });
   }
 
   /* ---------------------------------------------------------
