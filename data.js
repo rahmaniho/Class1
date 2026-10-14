@@ -77,7 +77,7 @@ const MATH_LESSONS = [
     ],
     activities: [
       { type: 'count', object: 'ball', count: 6, max: 10, prompt: 'چند توپ داریم؟' },
-      { type: 'match', prompt: 'کدام عدد «هفت» است؟', answer: '7', options: ['5', '7', '9', '3'] },
+      { type: 'match', prompt: 'کدام عدد «هفت» است؟', answer: '۷', options: ['۵', '۷', '۹', '۳'] },
       { type: 'count', object: 'duck', count: 8, max: 10, prompt: 'اردک‌ها را بشمار.' }
     ]
   },
@@ -107,7 +107,7 @@ const MATH_LESSONS = [
     ],
     activities: [
       { type: 'compareChoose', left: 5, right: 3, prompt: 'کدام گروه بیشتر است؟', answer: 'left' },
-      { type: 'compareChoose', left: 2, right: 6, prompt: 'کدام گروه کمتر است؟', answer: 'right' },
+      { type: 'compareChoose', left: 2, right: 6, prompt: 'کدام گروه کمتر است؟', answer: 'left' },
       { type: 'symbol', left: 7, right: 7, prompt: 'کدام نشانه درست است؟', answer: '=' }
     ]
   },
@@ -184,7 +184,7 @@ const MATH_LESSONS = [
     activities: [
       { type: 'shape', prompt: 'کدام شکل «مثلث» است؟', answer: 'triangle', options: ['circle', 'square', 'triangle', 'rectangle'] },
       { type: 'shape', prompt: 'کدام شکل «دایره» است؟', answer: 'circle', options: ['triangle', 'circle', 'rectangle', 'square'] },
-      { type: 'choose', prompt: 'پنجره‌ی کلاس بیشتر به کدام شکل شبیه است؟', answer: 'مربع', options: ['مربع', 'دایره', 'مثلث', 'ستاره'] }
+      { type: 'choose', prompt: 'درِ کلاس بیشتر به کدام شکل شبیه است؟', answer: 'مستطیل', options: ['مستطیل', 'مربع', 'دایره', 'مثلث'] }
     ]
   },
   {
@@ -264,16 +264,16 @@ const FARSI_LESSONS = [
       { type: 'letter', letter: 'ت', options: ['ث', 'ب', 'ت', 'پ'], prompt: 'کدام حرف «ت» است؟' }
     ]
   },
-  letterLesson('f1', ['ث'], [['ث', 'ثوب'], ['ث', 'ثعلب']], {
+  letterLesson('f1', ['ث'], [['ث', 'ثعلب'], ['ث', 'اثر']], {
     title: 'حرف «ث»',
     objective: 'حرف «ث» را می‌شناسیم و در کلمه پیدا می‌کنیم.',
     teach: [
       { kind: 'text', text: 'حرف «ث» صدای «س» می‌دهد و سه نقطه بالایش دارد.' },
-      { kind: 'letters', letters: ['ث'], words: [['ث', 'ثوب'], ['ث', 'اثر']] }
+      { kind: 'letters', letters: ['ث'], words: [['ث', 'ثعلب'], ['ث', 'اثر']] }
     ],
     activities: [
       { type: 'letter', letter: 'ث', options: ['ت', 'ج', 'ث', 'ب'], prompt: 'کدام حرف «ث» است؟' },
-      { type: 'sound', word: 'ثوب', first: 'ث', options: ['ت', 'ث', 'س', 'ج'], prompt: 'کلمه‌ی «ثوب» با کدام حرف شروع می‌شود؟' }
+      { type: 'sound', word: 'ثعلب', first: 'ث', options: ['ت', 'ث', 'س', 'ج'], prompt: 'کلمه‌ی «ثعلب» (یعنی روباه) با کدام حرف شروع می‌شود؟' }
     ]
   }),
   letterLesson('f2', ['ج', 'چ'], [['ج', 'جوجه'], ['چ', 'چتر']], {
@@ -298,7 +298,7 @@ const FARSI_LESSONS = [
     ],
     activities: [
       { type: 'letter', letter: 'خ', options: ['ح', 'ج', 'خ', 'د'], prompt: 'کدام حرف «خ» است؟' },
-      { type: 'sound', word: 'خورشید', first: 'خ', options: ['ح', 'خ', 'ه', 'ج'], prompt: 'کلمه‌ی «خورشید» با کدام حرف شروع می‌شود؟' }
+      { type: 'sound', word: 'خورشید', first: 'خ', options: ['ح', 'خ', 'هـ', 'ج'], prompt: 'کلمه‌ی «خورشید» با کدام حرف شروع می‌شود؟' }
     ]
   }),
   letterLesson('f4', ['د', 'ذ'], [['د', 'درخت'], ['ذ', 'ذره']], {
@@ -410,6 +410,7 @@ const FARSI_LESSONS = [
       { kind: 'letters', letters: ['هـ', 'ی'], words: [['هـ', 'هندوانه'], ['ی', 'یخ'], ['هـ', 'هویج'], ['ی', 'یادگیری']] }
     ],
     activities: [
+      { type: 'letter', letter: 'هـ', options: ['ن', 'و', 'هـ', 'ی'], prompt: 'کدام حرف «هـ» است؟' },
       { type: 'letter', letter: 'ی', options: ['و', 'هـ', 'ی', 'ب'], prompt: 'کدام حرف «ی» است؟' },
       { type: 'sound', word: 'هندوانه', first: 'هـ', options: ['ی', 'هـ', 'و', 'ن'], prompt: 'کلمه‌ی «هندوانه» با کدام حرف شروع می‌شود؟' }
     ]
@@ -581,7 +582,7 @@ const SCIENCE_LESSONS = [
     activities: [
       { type: 'choose', prompt: 'با کدام عضو صدا را می‌شنویم؟', answer: 'گوش', options: ['گوش', 'چشم', 'بینی', 'دست'] },
       { type: 'choose', prompt: 'کدام یک صدا درست می‌کند؟', answer: 'طبل', options: ['طبل', 'کتاب بسته', 'سنگ ساکت', 'کاغذ خالی'] },
-      { type: 'choose', prompt: 'صدای وزوز زنبور چگونه است؟', answer: 'آهسته', options: ['آهسته', 'خیلی بلند', 'بی‌صدا', 'تصویر'] }
+      { type: 'choose', prompt: 'صدای وزوز زنبور چگونه است؟', answer: 'آهسته', options: ['آهسته', 'خیلی بلند', 'بی‌صدا', 'بم'] }
     ]
   },
   {

@@ -219,10 +219,12 @@
           <rect x="68" y="36" width="104" height="14" rx="7" fill="#FFE6C7" stroke="${INK}" stroke-width="3"/>
         </svg>`;
       case 'plant':
-        return `<svg class="big-art" viewBox="0 0 240 180" role="img" aria-label="گیاه با ریشه، ساقه، برگ و گل">
+        return `<svg class="big-art" viewBox="0 0 240 180" role="img" aria-label="گیاه با ریشه، ساقه، چهار برگ و گل">
           <path d="M120 120 V50" stroke="#45B97C" stroke-width="8" stroke-linecap="round"/>
           <path d="M120 88 C100 82 88 68 86 52 C104 54 118 70 120 88z" fill="#45B97C" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
           <path d="M120 78 C140 72 152 58 154 42 C136 44 122 60 120 78z" fill="#45B97C" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M120 112 C104 108 94 98 92 88 C108 90 118 102 120 112z" fill="#45B97C" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M120 106 C136 102 146 92 148 82 C132 84 122 96 120 106z" fill="#45B97C" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
           <circle cx="120" cy="40" r="14" fill="#FF6B5E" stroke="${INK}" stroke-width="2.5"/>
           <g fill="#FFD45A" stroke="${INK}" stroke-width="2.2">
             <circle cx="120" cy="22" r="8"/><circle cx="138" cy="40" r="8"/><circle cx="120" cy="58" r="8"/><circle cx="102" cy="40" r="8"/>
@@ -1739,8 +1741,8 @@
     } else if (kind === 'pattern') {
       body = `<div class="center-stage">${patternRowSVG(act.seq)}</div>
         <div class="options-grid">${shuffle(optData.options, act.seq.length * 3 + 1).map(o => `
-          <button class="opt" data-act="answer" data-value="${o}" aria-label="${SHAPE_NAMES[o] || o}">
-            ${shapeSVG(o)}
+          <button class="opt" data-act="answer" data-value="${o}" aria-label="${SHAPE_NAMES[o] || o}" style="flex-direction:column;gap:6px;min-height:110px">
+            ${shapeSVG(o)}<span style="font-size:15px;font-weight:700">${SHAPE_NAMES[o] || o}</span>
           </button>`).join('')}</div>`;
     } else if (kind === 'shape') {
       body = `<div class="options-grid">${shuffle(optData.options, 11).map(o => `
