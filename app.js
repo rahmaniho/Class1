@@ -959,7 +959,65 @@
   }
 
   /* ---------------------------------------------------------
-     نما: سینمای حروف (ویدیوی انیمیشن)
+     ویدیوهای آموزشی آپارات — پخش داخل برنامه
+     --------------------------------------------------------- */
+  const APARAT_VIDEOS = [
+    { id: 'e78l931', title: 'آموزش نوشتاری و تلفظ الفبای فارسی', desc: 'شکل نوشتاری و تلفظ حروف الفبا', art: 'lettercard', subjects: ['farsi'] },
+    { id: '2091511502462279680', short: true, title: 'آموزش الفبا — نسخه‌ی کوتاه', desc: 'مرور سریع نوشتاری و تلفظ الفبا', art: 'lettercard', subjects: ['farsi'] },
+    { id: 'w86s7l4', title: 'آموزش الفبا', desc: 'آموزش کامل حروف الفبای فارسی', art: 'shapes', subjects: ['farsi'] },
+    { id: 'q20d11z', title: 'الفبا و کلمات با قصه‌های کودکانه', desc: 'آموزش تصویری الفبا و کلمات با روایت داستانی', art: 'beanjar', subjects: ['farsi'] },
+    { id: 'ygd6y22', title: 'آموزش کلمات با تصاویر', desc: 'کلمه‌ها همراه تصاویر متنی', art: 'materials', subjects: ['farsi'] },
+    { id: 'pkec434', title: 'آهنگ لالایی کوچولو', desc: 'لالایی ملایم برای آرامش کودکان', art: 'sound', subjects: [] },
+    { id: 'icmg8ag', title: 'لالایی قشنگ', desc: 'یک لالایی دیگر برای خواب آرام', art: 'sound', subjects: [] },
+    { id: 'vyl6ve8', title: 'لالایی آرام', desc: 'آهنگ لالایی ملایم کودکانه', art: 'sound', subjects: [] },
+    { id: 'jqh714a', title: 'انیمیشن شاد مداد رنگی', desc: 'انیمیشن رنگی و شاد برای کودکان', art: 'pattern', subjects: [] },
+    { id: 'shiq3le', title: 'انیمیشن عروسک قشنگ من', desc: 'انیمیشن عروسکی دوست‌داشتنی', art: 'seasons', subjects: [] },
+    { id: 'b411t82', title: 'علوم: آبزیان', desc: 'ویدیوی آموزشی درباره‌ی جانداران آبزی', art: 'animals', subjects: ['science'] },
+    { id: 'myi4q6v', title: 'ریاضی: آموزش اعداد', desc: 'یادگیری اعداد برای ریاضی اول', art: 'numline', subjects: ['math'] }
+  ];
+
+  function aparatUrl(v) {
+    return v.short ? 'https://www.aparat.com/shorts/' + v.id : 'https://www.aparat.com/v/' + v.id;
+  }
+
+  function videoCardHTML(v) {
+    return `
+      <button class="act-card ext-card reveal" data-act="video" data-video="${v.id}" aria-label="پخش ${escapeHtml(v.title)}">
+        <div class="act-ill">${bigArtSVG(v.art)}</div>
+        <div class="act-title">${v.title}</div>
+        <div class="act-desc">${v.desc}</div>
+        <div class="act-link">${icon('play')} پخش ویدیو</div>
+      </button>`;
+  }
+
+  function openVideoModal(videoId) {
+    const v = APARAT_VIDEOS.find(x => x.id === videoId);
+    if (!v) return;
+    closeModal();
+    const wrap = document.createElement('div');
+    wrap.className = 'modal-backdrop';
+    wrap.id = 'modal-root';
+    wrap.innerHTML = `
+      <div class="modal video-modal" role="dialog" aria-modal="true" aria-labelledby="video-title">
+        <div class="modal-head">
+          <h2 class="t-sub" id="video-title">${escapeHtml(v.title)}</h2>
+          <button class="icon-btn" data-act="modal-close" aria-label="بستن">${icon('close')}</button>
+        </div>
+        <div class="video-frame">
+          <iframe class="video-embed" src="https://www.aparat.com/embed/${v.id}" title="${escapeHtml(v.title)}"
+            allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
+            referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        </div>
+        <div class="stage-actions">
+          <a class="btn btn-secondary" href="${aparatUrl(v)}" target="_blank" rel="noopener noreferrer">تماشا در آپارات</a>
+          <button class="btn btn-quiet" data-act="modal-close">بستن</button>
+        </div>
+      </div>`;
+    document.body.appendChild(wrap);
+  }
+
+  /* ---------------------------------------------------------
+     سینمای حروف (ویدیوی انیمیشن)
      --------------------------------------------------------- */
   function renderCinema() {
     return `
@@ -1024,26 +1082,7 @@
             <p class="t-label">برای تماشا در آپارات · الفبا، شعر، لالایی، علوم و ریاضی</p>
           </div>
           <div class="activity-row">
-            ${[
-              { title: 'آموزش نوشتاری و تلفظ الفبای فارسی', desc: 'شکل نوشتاری و تلفظ حروف الفبا', art: 'lettercard', url: 'https://www.aparat.com/v/e78l931' },
-              { title: 'آموزش الفبا — نسخه‌ی کوتاه', desc: 'مرور سریع نوشتاری و تلفظ الفبا', art: 'lettercard', url: 'https://www.aparat.com/shorts/2091511502462279680' },
-              { title: 'آموزش الفبا', desc: 'آموزش کامل حروف الفبای فارسی', art: 'shapes', url: 'https://www.aparat.com/v/w86s7l4' },
-              { title: 'الفبا و کلمات با قصه‌های کودکانه', desc: 'آموزش تصویری الفبا و کلمات با روایت داستانی', art: 'beanjar', url: 'https://www.aparat.com/v/q20d11z' },
-              { title: 'آهنگ لالایی کوچولو', desc: 'لالایی ملایم برای آرامش کودکان', art: 'sound', url: 'https://www.aparat.com/v/pkec434' },
-              { title: 'لالایی قشنگ', desc: 'یک لالایی دیگر برای خواب آرام', art: 'sound', url: 'https://www.aparat.com/v/icmg8ag' },
-              { title: 'لالایی آرام', desc: 'آهنگ لالایی ملایم کودکانه', art: 'sound', url: 'https://www.aparat.com/v/vyl6ve8' },
-              { title: 'انیمیشن شاد مداد رنگی', desc: 'انیمیشن رنگی و شاد برای کودکان', art: 'pattern', url: 'https://www.aparat.com/v/jqh714a' },
-              { title: 'انیمیشن عروسک قشنگ من', desc: 'انیمیشن عروسکی دوست‌داشتنی', art: 'seasons', url: 'https://www.aparat.com/v/shiq3le' },
-              { title: 'آموزش کلمات با تصاویر', desc: 'کلمه‌ها همراه تصاویر متنی', art: 'materials', url: 'https://www.aparat.com/v/ygd6y22' },
-              { title: 'علوم: آبزیان', desc: 'ویدیوی آموزشی درباره‌ی جانداران آبزی', art: 'animals', url: 'https://www.aparat.com/v/b411t82' },
-              { title: 'ریاضی: آموزش اعداد', desc: 'یادگیری اعداد برای ریاضی اول', art: 'numline', url: 'https://www.aparat.com/v/myi4q6v' }
-            ].map(v => `
-              <a class="act-card ext-card reveal" href="${v.url}" target="_blank" rel="noopener noreferrer">
-                <div class="act-ill">${bigArtSVG(v.art)}</div>
-                <div class="act-title">${v.title}</div>
-                <div class="act-desc">${v.desc}</div>
-                <div class="act-link">تماشا در آپارات ${icon('arrow-left')}</div>
-              </a>`).join('')}
+            ${APARAT_VIDEOS.map(videoCardHTML).join('')}
           </div>
         </section>
 
@@ -1117,6 +1156,18 @@
           </div>
         </header>
         <div class="lesson-grid">${cards}</div>
+        ${(() => {
+          const vids = APARAT_VIDEOS.filter(v => (v.subjects || []).includes(s.id));
+          if (!vids.length) return '';
+          return `
+        <section class="section" aria-label="ویدیوهای آموزشی ${escapeHtml(s.title)}">
+          <div class="section-head">
+            <h2 class="t-heading">ویدیوهای آموزشی ${s.title}</h2>
+            <button class="btn btn-quiet" data-act="nav" data-hash="#/cinema">همه‌ی ویدیوها</button>
+          </div>
+          <div class="activity-row">${vids.map(videoCardHTML).join('')}</div>
+        </section>`;
+        })()}
         <footer class="foot-note">
           <span class="foot-group">
             <span>${faDigits(lessons.length)} درس · ${s.tagline}</span>
@@ -1935,7 +1986,26 @@
     afterRender();
   }
 
+  /* ---------------------------------------------------------
+     خط تقدیم — زیر فوتر همه‌ی صفحات
+     --------------------------------------------------------- */
+  function dedicationHTML() {
+    return `
+      <div class="dedication-line" role="note">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="${STAR_POINTS}" fill="#FFD45A" stroke="#17213A" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        تقدیم به دبستان شهید قاسمی مهرگان
+        <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="${STAR_POINTS}" fill="#FFD45A" stroke="#17213A" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </div>`;
+  }
+
   function afterRender() {
+    /* خط تقدیم زیر هر فوتر */
+    $$('.foot-note').forEach(f => {
+      const nxt = f.nextElementSibling;
+      if (!nxt || !nxt.classList.contains('dedication-line')) {
+        f.insertAdjacentHTML('afterend', dedicationHTML());
+      }
+    });
     /* انیمیشن ورود */
     const reveals = $$('.reveal');
     if ('IntersectionObserver' in window) {
@@ -2197,6 +2267,9 @@
       }
       case 'adult':
         openAdultModal();
+        break;
+      case 'video':
+        openVideoModal(t.dataset.video);
         break;
       case 'install-open':
         openInstallModal();
