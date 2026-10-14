@@ -830,7 +830,10 @@
   }
 
   /* درس‌هایی که صدای توضیح دارند (audio/lessons/{id}.mp3) */
-  const LESSON_AUDIO = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 's1', 's2', 's3', 's4'];
+  const LESSON_AUDIO = [
+    'm1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12',
+    's1', 's2', 's3', 's4', 's5', 's6', 's7'
+  ];
 
   function lessonAudioHTML(lesson) {
     if (LESSON_AUDIO.indexOf(lesson.id) === -1) return '';
