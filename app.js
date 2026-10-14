@@ -969,7 +969,7 @@
             <h1 class="t-heading" style="font-size:30px">${icon('play', 'h-ico')} سینمای حروف</h1>
             <button class="btn btn-quiet" data-act="nav" data-hash="#/">${icon('arrow-left')} بازگشت به خانه</button>
           </div>
-          <p class="t-label" style="margin-bottom:18px">انیمیشن «ماجرای حروف»؛ شعر و موزیک کودکانه برای یادگیری الفبا · مدت: ۱:۲۹</p>
+          <p class="t-label" style="margin-bottom:18px">انیمیشن «ماجرای حروف»؛ شعر، موزیک پیانوی ملایم و تلفظ کامل الفبا · مدت: ۱:۴۲</p>
           <figure class="video-frame">
             <video controls playsinline preload="metadata" poster="videos/majara-horof-poster.jpg">
               <source src="videos/majara-horof.mp4" type="video/mp4">
@@ -989,14 +989,61 @@
           </div>
           <div class="poem-row">
             ${[
-              { n: 1, label: 'سحر بیدار می‌شود', text: 'سحر کوچولو از خواب پاشد و گفت: بیا، بیا، بیایید ببینیم!' },
-              { n: 2, label: 'آفتاب، برف، پرواز، توپ', text: 'حرف آ آمد و آفتاب خندید، ب و پ آمدند و توپ قرمزش را انداخت.' },
-              { n: 3, label: 'ث، جیم، چه و دوستان', text: 'ث و جیم و چه آواز خواندند، ح و خ و دال رقصیدند.' },
-              { n: 4, label: 'رقص حروف و شب‌به‌خیر', text: 'ر و ز و ژ رقصیدند و الفبا خوابید زیر نور ماه.' }
+              { n: 1, label: 'سحر بیدار می‌شود', text: 'سحر کوچولو از خواب پاشد. ستاره‌ی خندان گفت: سلام! بیا، بیایید ببینیم.' },
+              { n: 2, label: 'الف، به، په، ته', text: 'الف، به، په، ته. آفتاب آمد و خندید. برف بارید. پرواز کردیم. توپ قرمز را انداختیم.' },
+              { n: 3, label: 'ثه تا دال', text: 'ثه، جیم، چه، حا، خا، دال. هر حرف یک قصه‌ی قشنگ دارد.' },
+              { n: 4, label: 'رقص حروف و شب‌به‌خیر', text: 'ره، زه، ژه رقصیدند. الفبا خوابید زیر نور ماه. شب به خیر حرف‌های مهربان.' }
             ].map(p => `
               <button class="audio-btn" data-act="speak" data-text="${escapeHtml(p.text)}" data-audio="stories/poem-${p.n}" aria-label="شنیدن ${escapeHtml(p.label)}">
                 ${icon('speaker')} <span>${faDigits(p.n)} · ${p.label}</span>
               </button>`).join('')}
+          </div>
+        </section>
+
+        <section class="section" aria-label="تلفظ کامل الفبا">
+          <div class="section-head">
+            <h2 class="t-heading">الفبای فارسی را شمرده بشنویم</h2>
+            <p class="t-label">هر گروه از حروف را با تلفظ دقیق و شمرده تکرار کن</p>
+          </div>
+          <div class="poem-row">
+            ${[
+              { n: 1, label: 'الف تا حا', text: 'الف. به. په. ته. ثه. جیم. چه. حا.' },
+              { n: 2, label: 'خا تا شین', text: 'خا. دال. ذال. ره. زه. ژه. سین. شین.' },
+              { n: 3, label: 'صاد تا قاف', text: 'صاد. ضاد. طا. ظا. عین. غین. فه. قاف.' },
+              { n: 4, label: 'کاف تا یه', text: 'کاف. گاف. لام. میم. نون. واو. هِ. یه.' }
+            ].map(p => `
+              <button class="audio-btn" data-act="speak" data-text="${escapeHtml(p.text)}" data-audio="stories/abc-${p.n}" aria-label="شنیدن ${escapeHtml(p.label)}">
+                ${icon('speaker')} <span>${faDigits(p.n)} · ${p.label}</span>
+              </button>`).join('')}
+          </div>
+        </section>
+
+        <section class="section" aria-label="ویدیوهای آموزشی">
+          <div class="section-head">
+            <h2 class="t-heading">ویدیوهای آموزشی</h2>
+            <p class="t-label">برای تماشا در آپارات · الفبا، شعر، لالایی، علوم و ریاضی</p>
+          </div>
+          <div class="activity-row">
+            ${[
+              { title: 'آموزش نوشتاری و تلفظ الفبای فارسی', desc: 'شکل نوشتاری و تلفظ حروف الفبا', art: 'lettercard', url: 'https://www.aparat.com/v/e78l931' },
+              { title: 'آموزش الفبا — نسخه‌ی کوتاه', desc: 'مرور سریع نوشتاری و تلفظ الفبا', art: 'lettercard', url: 'https://www.aparat.com/shorts/2091511502462279680' },
+              { title: 'آموزش الفبا', desc: 'آموزش کامل حروف الفبای فارسی', art: 'shapes', url: 'https://www.aparat.com/v/w86s7l4' },
+              { title: 'الفبا و کلمات با قصه‌های کودکانه', desc: 'آموزش تصویری الفبا و کلمات با روایت داستانی', art: 'beanjar', url: 'https://www.aparat.com/v/q20d11z' },
+              { title: 'آهنگ لالایی کوچولو', desc: 'لالایی ملایم برای آرامش کودکان', art: 'sound', url: 'https://www.aparat.com/v/pkec434' },
+              { title: 'لالایی قشنگ', desc: 'یک لالایی دیگر برای خواب آرام', art: 'sound', url: 'https://www.aparat.com/v/icmg8ag' },
+              { title: 'لالایی آرام', desc: 'آهنگ لالایی ملایم کودکانه', art: 'sound', url: 'https://www.aparat.com/v/vyl6ve8' },
+              { title: 'انیمیشن شاد مداد رنگی', desc: 'انیمیشن رنگی و شاد برای کودکان', art: 'pattern', url: 'https://www.aparat.com/v/jqh714a' },
+              { title: 'انیمیشن عروسک قشنگ من', desc: 'انیمیشن عروسکی دوست‌داشتنی', art: 'seasons', url: 'https://www.aparat.com/v/shiq3le' },
+              { title: 'آموزش کلمات با تصاویر', desc: 'کلمه‌ها همراه تصاویر متنی', art: 'materials', url: 'https://www.aparat.com/v/ygd6y22' },
+              { title: 'علوم: آبزیان', desc: 'ویدیوی آموزشی درباره‌ی جانداران آبزی', art: 'animals', url: 'https://www.aparat.com/v/b411t82' },
+              { title: 'ریاضی: آموزش اعداد', desc: 'یادگیری اعداد برای ریاضی اول', art: 'numline', url: 'https://www.aparat.com/v/myi4q6v' }
+            ].map(v => `
+              <a class="act-card ext-card reveal" href="${v.url}" target="_blank" rel="noopener noreferrer">
+                <div class="act-ill">${bigArtSVG(v.art)}</div>
+                <div class="act-title">${v.title}</div>
+                <div class="act-desc">${v.desc}</div>
+                <div class="act-link">تماشا در آپارات ${icon('arrow-left')}</div>
+              </a>`).join('')}
           </div>
         </section>
 
