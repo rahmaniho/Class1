@@ -1892,3 +1892,66 @@ a.act-card { text-decoration: none; }
 
 /* جایگاهِ پیمایش برای پرش به کارتِ تمرین در موبایل */
 #lesson-center { scroll-margin-top: 88px; }
+
+/* =========================================================
+   صفحه‌ی دانلود و نصب
+   ========================================================= */
+.dl-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-sm);
+}
+.dl-badge {
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 66px;
+  flex: none;
+  border-radius: 20px;
+  background: var(--surface-blue);
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+.dl-badge svg { width: 34px; height: 34px; }
+.dl-body { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.dl-body h3 { margin: 0; font-size: 22px; font-weight: 800; line-height: 1.4; }
+.dl-steps {
+  margin: 0;
+  padding-inline-start: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 16px;
+  line-height: 1.9;
+  color: var(--ink-muted);
+}
+.dl-steps li::marker { color: var(--coral); font-weight: 800; }
+.dl-illo-box {
+  margin: 4px 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-2);
+  background: var(--surface-blue);
+  border: 2px dashed var(--border);
+  border-radius: var(--r-activity);
+}
+.dl-illo { width: 200px; height: auto; max-width: 100%; }
+.dl-card .stage-actions { margin-top: 4px; }
+.dl-card .btn { text-decoration: none; }
+
+@media (max-width: 620px) {
+  .dl-card { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: var(--space-2); }
+  .dl-badge { width: 54px; height: 54px; border-radius: 16px; }
+  .dl-badge svg { width: 28px; height: 28px; }
+  .dl-body h3 { font-size: 19px; }
+  .dl-steps { font-size: 15px; padding-inline-start: 20px; }
+  .dl-illo { width: 170px; }
+}
