@@ -7,7 +7,11 @@
   <meta name="theme-color" content="#FFF8EA">
   <title>مدرسه‌ی من | آموزش کلاس اول — ریاضی، فارسی، علوم</title>
   <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/icons/icon-192.png">
   <link rel="apple-touch-icon" href="images/icons/apple-touch-icon.png">
+  <meta name="copyright" content="© ۱۴۰۴ مدرسه‌ی من — دبستان شهید قاسمی. همه‌ی حقوق محفوظ است.">
+  <meta name="author" content="مدرسه‌ی من (KarenSoft)">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -43,6 +47,12 @@
       inset: -17px; border: 1.5px solid rgba(0, 36, 150, 0.14);
       border-top-color: rgba(0, 100, 255, 0.5);
       animation: splash-spin 5.5s linear infinite reverse;
+    }
+    .splash-app-icon {
+      width: 104px; height: 104px; border-radius: 24px;
+      border: 2px solid #17213A; background: #fff; object-fit: cover;
+      box-shadow: 3px 3px 0 rgba(23, 33, 58, 0.9);
+      animation: splash-pop 0.85s 0.1s cubic-bezier(0.2, 0.8, 0.25, 1) both;
     }
     .splash-wordmarks {
       display: flex; flex-direction: column; align-items: center; gap: 12px;
@@ -129,6 +139,7 @@
         <span class="splash-orbit"></span>
         <span class="splash-orbit splash-orbit-2"></span>
       </div>
+      <img class="splash-app-icon" src="images/icons/icon-192.png" alt="مدرسه‌ی من" width="192" height="192">
       <div class="splash-wordmarks">
         <img class="splash-wm-fa" src="images/karensoft/wordmark-fa.png" alt="کارن سافت">
         <img class="splash-wm-en" src="images/karensoft/wordmark-en.png" alt="Karensoft">

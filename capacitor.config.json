@@ -1,0 +1,14 @@
+{
+  "appId": "ir.karensoft.madreseman",
+  "appName": "مدرسه‌ی من",
+  "webDir": "dist",
+  "loggingEnabled": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false
+    }
+  }
+}

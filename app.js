@@ -118,6 +118,19 @@
     <circle cx="12" cy="12" r="5" fill="#FF6B5E" stroke="#17213A" stroke-width="2"/>
     <circle cx="12" cy="12" r="1.6" fill="#17213A"/>
   </symbol>
+  <symbol id="i-download" viewBox="0 0 24 24">
+    <path d="M12 3v10m0 0l-4-4m4 4l4-4" fill="none" stroke="#17213A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M4 16.5V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2.5" fill="none" stroke="#17213A" stroke-width="2.4" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24">
+    <rect x="6" y="2.5" width="12" height="19" rx="3" fill="#DDF3FF" stroke="#17213A" stroke-width="2"/>
+    <path d="M10.5 5.5h3" stroke="#17213A" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="12" cy="18.5" r="1.4" fill="#17213A"/>
+  </symbol>
+  <symbol id="i-desktop" viewBox="0 0 24 24">
+    <rect x="2.5" y="4" width="19" height="12.5" rx="2" fill="#DDF4E4" stroke="#17213A" stroke-width="2"/>
+    <path d="M8.5 20.5h7M12 16.5v4" stroke="#17213A" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
 </svg>`;
   }
 
@@ -585,6 +598,14 @@
     celebrate: {
       src: 'images/celebrate.jpg',
       alt: 'مدال کاغذی، بادکنک و ستاره‌های رنگی برای جشن یادگیری'
+    },
+    install: {
+      src: 'images/icons/icon-512.png',
+      alt: 'آیکونِ برنامه‌ی مدرسه‌ی من'
+    },
+    appIcon: {
+      src: 'images/icons/icon-512.png',
+      alt: 'آیکونِ برنامه‌ی مدرسه‌ی من'
     }
   };
 
@@ -746,6 +767,7 @@
     if (parts[0] === 'game') return { view: 'game', gameId: parts[1] };
     if (parts[0] === 'progress') return { view: 'progress' };
     if (parts[0] === 'cinema') return { view: 'cinema' };
+    if (parts[0] === 'install') return { view: 'install' };
     return { view: 'home' };
   }
 
@@ -768,7 +790,8 @@
     { id: 'home', label: 'خانه', icon: 'home', hash: '#/' },
     { id: 'lessons', label: 'درس‌ها', icon: 'book', hash: '#/lessons/math' },
     { id: 'games', label: 'بازی‌ها', icon: 'game', hash: '#/games' },
-    { id: 'progress', label: 'پیشرفت من', icon: 'chart', hash: '#/progress' }
+    { id: 'progress', label: 'پیشرفت من', icon: 'chart', hash: '#/progress' },
+    { id: 'install', label: 'دانلود برنامه', icon: 'download', hash: '#/install' }
   ];
 
   function railHTML(active) {
@@ -2296,6 +2319,8 @@
       html = renderProgress();
     } else if (r.view === 'cinema') {
       html = renderCinema();
+    } else if (r.view === 'install') {
+      html = renderInstall();
     }
 
     app.innerHTML = `
@@ -2337,6 +2362,12 @@
   /* ---------------------------------------------------------
      خط تقدیم — زیر فوتر همه‌ی صفحات
      --------------------------------------------------------- */
+  /* حق‌نشرِ دیداری — زیرِ هر فوتر */
+  const COPYRIGHT = {
+    line: '© ۱۴۰۴ مدرسه‌ی من · همه‌ی حقوق محفوظ است',
+    note: 'بازنشر، کپی‌برداری یا استفاده‌ی تجاری از محتوای این برنامه بدون اجازه‌ی کتبی مجاز نیست.'
+  };
+
   function dedicationHTML() {
     return `
       <div class="dedi-block" role="note">
@@ -2347,6 +2378,129 @@
         </div>
         <div class="dedi-sub">${SPONSOR.audience}</div>
         <div class="sponsor-line">${icon('heart')} ${SPONSOR.credit}</div>
+        <p class="copyright-line">
+          <small>${COPYRIGHT.line} · ${COPYRIGHT.note}</small>
+        </p>
+      </div>`;
+  }
+
+  /* ---------------------------------------------------------
+     نما: دانلود و نصب
+     --------------------------------------------------------- */
+  const RELEASES_PAGE = 'https://github.com/rahmaniho/Class1/releases';
+  const APK_URL = 'https://github.com/rahmaniho/Class1/releases/latest/download/madrese-man-android.apk';
+  const ZIP_URL = 'https://github.com/rahmaniho/Class1/releases/latest/download/madrese-man-web.zip';
+
+  function shareArrowSVG() {
+    return `<svg viewBox="0 0 120 90" class="dl-illo" aria-hidden="true">
+      <rect x="8" y="8" width="46" height="74" rx="10" fill="#DDF3FF" stroke="#17213A" stroke-width="2.5"/>
+      <rect x="17" y="18" width="28" height="20" rx="5" fill="#fff" stroke="#17213A" stroke-width="2"/>
+      <circle cx="31" cy="52" r="6" fill="#FFD45A" stroke="#17213A" stroke-width="2"/>
+      <path d="M66 34v-8l14-12 14 12v8" fill="none" stroke="#17213A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="74" y="34" width="12" height="26" rx="3" fill="#fff" stroke="#17213A" stroke-width="2.5"/>
+      <path d="M80 42v10" stroke="#17213A" stroke-width="2.5" stroke-linecap="round"/>
+      <rect x="58" y="66" width="48" height="14" rx="7" fill="#FFE6C7" stroke="#17213A" stroke-width="2.5"/>
+      <path d="M82 70v6M76.5 73h11" stroke="#FF6B5E" stroke-width="2.6" stroke-linecap="round"/>
+    </svg>`;
+  }
+
+  function renderInstall() {
+    const card = (opts) => `
+      <article class="dl-card reveal">
+        <span class="dl-badge">${icon(opts.icon)}</span>
+        <div class="dl-body">
+          <h3>${opts.title}</h3>
+          ${opts.lead ? `<p class="t-body">${opts.lead}</p>` : ''}
+          ${opts.steps ? `<ol class="dl-steps">${opts.steps.map(t => `<li>${t}</li>`).join('')}</ol>` : ''}
+          ${opts.illo || ''}
+          <div class="stage-actions">${opts.actions}</div>
+          ${opts.note ? `<p class="t-label">${opts.note}</p>` : ''}
+        </div>
+      </article>`;
+
+    const android = card({
+      icon: 'phone',
+      title: 'نسخه‌ی اندروید (APK)',
+      lead: 'یک فایلِ نصبی که روی گوشی و تبلتِ اندرویدی نصب می‌شود؛ بعد از نصب، برنامه بدون اینترنت هم باز می‌شود.',
+      steps: [
+        'دکمه‌ی «دانلودِ نسخه‌ی اندروید» را بزن تا فایل APK ذخیره شود.',
+        'فایل را باز کن. اگر گوشی پرسید «نصب از منابع ناشناس»، اجازه بده.',
+        'پس از نصب، آیکونِ «مدرسه‌ی من» به صفحه‌ی گوشی اضافه می‌شود.'
+      ],
+      actions: `<a class="btn btn-primary" href="${APK_URL}" target="_blank" rel="noopener noreferrer">${icon('download')} دانلودِ نسخه‌ی اندروید</a>
+        <a class="btn btn-secondary" href="${RELEASES_PAGE}" target="_blank" rel="noopener noreferrer">همه‌ی نسخه‌ها</a>`,
+      note: 'اندروید ۶ و بالاتر · حدود ۳۰ مگابایت · ویدیوها برای پخش به اینترنت نیاز دارند'
+    });
+
+    const ios = card({
+      icon: 'phone',
+      title: 'آیفون و آی‌پد',
+      lead: 'روی آیفون، برنامه را از مرورگرِ Safari نصب کن؛ دقیقاً مثل یک برنامه‌ی واقعی و بدون اینترنت کار می‌کند.',
+      steps: [
+        'در Safari آدرسِ برنامه را باز کن.',
+        'دکمه‌ی «اشتراک‌گذاری» (مربع با فلشِ رو به بالا) را بزن.',
+        'گزینه‌ی «افزودن به صفحه‌ی اصلی» را انتخاب کن.',
+        'سپس «افزودن» را بزن؛ آیکونِ برنامه روی صفحه‌ی گوشی می‌آید.'
+      ],
+      illo: `<figure class="dl-illo-box">${shareArrowSVG()}<figcaption class="t-label">اشتراک‌گذاری ← افزودن به صفحه‌ی اصلی</figcaption></figure>`,
+      actions: `<button class="btn btn-primary" data-act="install-now">${icon('download')} نصب روی این دستگاه</button>
+        <a class="btn btn-secondary" href="${RELEASES_PAGE}" target="_blank" rel="noopener noreferrer">نسخه‌ی قابلِ نصب با حسابِ اپل</a>`,
+      note: 'نسخه‌ی ویژه‌ی آی‌او‌اس (IPA) برای نصب از طریق TestFlight یا App Store به حسابِ توسعه‌دهنده‌ی اپل نیاز دارد'
+    });
+
+    const desktop = card({
+      icon: 'desktop',
+      title: 'رایانه (ویندوز، مک، کروم‌بوک)',
+      lead: 'در مرورگرِ Chrome یا Edge برنامه را باز کن و آن را به‌صورت برنامه روی رایانه نصب کن.',
+      steps: [
+        'برنامه را در Chrome یا Edge باز کن.',
+        'روی آیکونِ نصب در نوارِ آدرس بزن (یا از منوی مرورگر «نصب برنامه» را انتخاب کن).',
+        'برنامه مثل یک برنامه‌ی معمولی روی رایانه اجرا می‌شود.'
+      ],
+      actions: `<button class="btn btn-primary" data-act="install-now">${icon('download')} نصب روی این رایانه</button>`,
+      note: 'برای تماشای ویدیوها، اتصالِ اینترنت لازم است'
+    });
+
+    const offline = card({
+      icon: 'download',
+      title: 'بسته‌ی کاملِ برنامه (ZIP)',
+      lead: 'همه‌ی فایل‌های برنامه در یک فایلِ فشرده — برای استفاده‌ی آفلاین، رونوشت برداشتن یا اجرا روی هر دستگاه.',
+      steps: [
+        'فایل ZIP را دانلود و از حالتِ فشرده خارج کن.',
+        'پرونده‌ی index.html را در مرورگر باز کن.',
+        'همه‌ی درس‌ها، تصویرها و صداها بدون اینترنت در دسترس‌اند.'
+      ],
+      actions: `<a class="btn btn-primary" href="${ZIP_URL}" target="_blank" rel="noopener noreferrer">${icon('download')} دانلودِ بسته‌ی کامل</a>`,
+      note: 'اگر لینک‌ها هنوز فعال نیستند، نسخه‌ی تازه منتشر نشده است؛ از دکمه‌ی «نصب روی این دستگاه» استفاده کن'
+    });
+
+    return `
+      <div class="main-inner">
+        <header class="page-head">
+          <button class="back-link" data-act="nav" data-hash="#/">${icon('arrow-right')} بازگشت به خانه</button>
+          <div class="page-hero">
+            <div class="page-hero-copy">
+              <h1 class="t-display">مدرسه‌ی من را همیشه همراهت داشته باش</h1>
+              <p class="t-body measure">یک‌بار نصب کن؛ بعد از آن درس‌ها، تمرین‌ها، صداها و تصویرها حتی بدون اینترنت کار می‌کنند.</p>
+            </div>
+            <figure class="img-frame page-hero-art install-hero">
+              ${artImg('appIcon', { eager: true, fallback: shareArrowSVG(), fallbackDisplay: 'flex', alt: 'آیکونِ برنامه‌ی مدرسه‌ی من' })}
+            </figure>
+          </div>
+        </header>
+
+        <section class="section" aria-label="نسخه‌ی اندروید">${android}</section>
+        <section class="section" aria-label="نسخه‌ی آیفون و آی‌پد">${ios}</section>
+        <section class="section" aria-label="نسخه‌ی رایانه">${desktop}</section>
+        <section class="section" aria-label="بسته‌ی کامل">${offline}</section>
+
+        <footer class="foot-note">
+          <span class="foot-group">
+            <span>مدرسه‌ی من · صفحه‌ی دانلود و نصب</span>
+            ${karenCreditHTML()}
+          </span>
+          <span>ویژه‌ی پایه‌ی اولِ دبستان شهید قاسمی</span>
+        </footer>
       </div>`;
   }
 
@@ -2377,9 +2531,38 @@
     }
   }
 
+  /* ---------------------------------------------------------
+     بازدارنده‌های کپی‌برداری
+     این‌ها جلویِ کپیِ ساده (راست‌کلیک، کشیدنِ تصویر، ذخیره) را
+     می‌گیرند؛ امنیتِ قطعی نیستند و فقط استفاده‌ی غیرمجاز را سخت می‌کنند.
+     --------------------------------------------------------- */
+  function protectAssets() {
+    /* تصویرها: بدون راست‌کلیک و بدون کشیدن‌دادن */
+    document.addEventListener('contextmenu', (ev) => {
+      const t = ev.target;
+      if (t && (t.tagName === 'IMG' || t.tagName === 'SVG' || t.closest('.img-frame'))) {
+        ev.preventDefault();
+      }
+    });
+    document.addEventListener('dragstart', (ev) => {
+      const t = ev.target;
+      if (t && t.tagName === 'IMG') ev.preventDefault();
+    });
+    /* کلیدهای میان‌برِ نمایشِ کد و ذخیره‌ی صفحه */
+    document.addEventListener('keydown', (ev) => {
+      const k = (ev.key || '').toLowerCase();
+      if ((ev.ctrlKey || ev.metaKey) && (k === 'u' || k === 's')) {
+        ev.preventDefault();
+      }
+    });
+    /* ویژگیِ ضدِ کشیدن روی تصویرهای تازه */
+    $$('img').forEach(img => { if (!img.hasAttribute('draggable')) img.setAttribute('draggable', 'false'); });
+  }
+
   function afterRender() {
     /* در صفحه‌های باریک: گامِ جاری را در فهرستِ افقی وسط بیاور */
     keepStepChipVisible();
+    protectAssets();
     /* خط تقدیم زیر هر فوتر */
     $$('.foot-note').forEach(f => {
       const nxt = f.nextElementSibling;
@@ -2664,7 +2847,7 @@
         break;
       }
       case 'install-open':
-        openInstallModal();
+        go('#/install');
         break;
       case 'install-now':
         runInstallNow();

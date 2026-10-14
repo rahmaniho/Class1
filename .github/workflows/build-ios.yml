@@ -1,0 +1,110 @@
+name: ساخت نسخه‌ی آی‌او‌اس (IPA)
+
+# این کار فقط وقتی اجرا می‌شود که در تنظیماتِ مخزن
+# Settings → Secrets and variables → Actions → Variables
+# متغیر BUILD_IOS را برابر با true بگذارید.
+# برای خروجیِ قابلِ نصب روی آیفون، حسابِ توسعه‌دهنده‌ی اپل لازم است.
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  ios:
+    name: آی‌او‌اس (IPA)
+    if: vars.BUILD_IOS == 'true'
+    runs-on: macos-latest
+    steps:
+      - name: دریافت کد
+        uses: actions/checkout@v4
+
+      - name: نصب Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: آماده‌سازی پوشه‌ی وب
+        run: node scripts/build-web.mjs
+
+      - name: نصب وابستگی‌ها
+        run: npm install --no-audit --no-fund
+
+      - name: ساخت پروژه‌ی آی‌او‌اس
+        run: npx cap add ios
+
+      - name: آیکون و صفحه‌ی آغازین
+        continue-on-error: true
+        run: npx capacitor-assets generate --ios --icon-path resources/icon.png --splash-path resources/splash.png --icon-background-source '#FFF8EA' --splash-background-source '#FFF8EA'
+
+      - name: همگام‌سازی فایل‌های وب
+        run: npx cap sync ios
+
+      - name: گواهیِ امضا
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.IOS_KEYCHAIN_PASSWORD }}
+          PROVISIONING_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          CERT_PATH=$RUNNER_TEMP/certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          echo -n "$CERTIFICATE_BASE64" | base64 --decode -o $CERT_PATH
+          echo -n "$PROVISIONING_BASE64" | base64 --decode -o $RUNNER_TEMP/profile.mobileprovision
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security import $CERT_PATH -P "$CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $RUNNER_TEMP/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+
+      - name: فایلِ تنظیماتِ خروجی
+        env:
+          TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+          PROFILE_NAME: ${{ secrets.IOS_PROVISIONING_PROFILE_NAME }}
+        run: |
+          cat > ExportOptions.plist <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>${{ vars.IOS_EXPORT_METHOD || 'ad-hoc' }}</string>
+            <key>teamID</key><string>$TEAM_ID</string>
+            <key>provisioningProfiles</key><dict>
+              <key>ir.karensoft.madreseman</key><string>$PROFILE_NAME</string>
+            </dict>
+          </dict></plist>
+          PLIST
+
+      - name: ساخت IPA
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App \
+            -destination 'generic/platform=iOS' \
+            -archivePath $RUNNER_TEMP/App.xcarchive archive \
+            CODE_SIGN_STYLE=Manual
+          xcodebuild -exportArchive \
+            -archivePath $RUNNER_TEMP/App.xcarchive \
+            -exportPath $PWD/build \
+            -exportOptionsPlist ../../ExportOptions.plist
+          cd ../..
+          cp ios/App/build/*.ipa madrese-man-ios.ipa
+
+      - name: بارگذاری فایل
+        uses: actions/upload-artifact@v4
+        with:
+          name: madrese-man-ios
+          path: madrese-man-ios.ipa
+          retention-days: 90
+
+      - name: انتشار در صفحه‌ی دانلودها (Release)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: مدرسه‌ی من ${{ github.ref_name }}
+          body_path: RELEASE_NOTES.md
+          files: madrese-man-ios.ipa

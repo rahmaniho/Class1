@@ -1,0 +1,77 @@
+name: ساخت نسخه‌ی اندروید و بسته‌ی آفلاین
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    name: اندروید (APK)
+    runs-on: ubuntu-latest
+    steps:
+      - name: دریافت کد
+        uses: actions/checkout@v4
+
+      - name: نصب Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: آماده‌سازی پوشه‌ی وب
+        run: node scripts/build-web.mjs
+
+      - name: بسته‌ی آفلاین (ZIP)
+        run: cd dist && zip -r ../madrese-man-web.zip . && cd ..
+
+      - name: نصب Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: نصب وابستگی‌ها
+        run: npm install --no-audit --no-fund
+
+      - name: ساخت پروژه‌ی اندروید
+        run: npx cap add android
+
+      - name: آیکون و صفحه‌ی آغازین
+        continue-on-error: true
+        run: npx capacitor-assets generate --android --icon-path resources/icon.png --splash-path resources/splash.png --icon-background-source '#FFF8EA' --splash-background-source '#FFF8EA'
+
+      - name: همگام‌سازی فایل‌های وب
+        run: npx cap sync android
+
+      - name: ساخت APK
+        run: |
+          cd android
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+          cd ..
+
+      - name: آماده‌سازی خروجی
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk madrese-man-android.apk
+
+      - name: بارگذاری فایل‌ها
+        uses: actions/upload-artifact@v4
+        with:
+          name: madrese-man-android
+          path: |
+            madrese-man-android.apk
+            madrese-man-web.zip
+          retention-days: 90
+
+      - name: انتشار در صفحه‌ی دانلودها (Release)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: مدرسه‌ی من ${{ github.ref_name }}
+          body_path: RELEASE_NOTES.md
+          files: |
+            madrese-man-android.apk
+            madrese-man-web.zip

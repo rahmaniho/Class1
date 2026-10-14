@@ -12,6 +12,7 @@ const CORE = [
   'data.js',
   'manifest.json',
   'images/icons/icon-192.png',
+  'images/icons/favicon-32.png',
   'images/icons/icon-512.png',
   'images/icons/icon-maskable-512.png',
   'images/icons/apple-touch-icon.png',

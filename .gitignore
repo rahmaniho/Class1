@@ -1,0 +1,19 @@
+/* خروجیِ ساخت */
+dist/
+android/
+ios/
+www/
+
+/* وابستگی‌ها */
+node_modules/
+
+/* بسته‌های آماده‌ی دانلود */
+*.apk
+*.aab
+*.ipa
+*.zip
+
+/* فایل‌های سیستمی */
+.DS_Store
+Thumbs.db
+*.log
