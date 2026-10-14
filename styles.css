@@ -540,7 +540,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 .lesson-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
   gap: var(--space-3);
 }
 .lesson-card {
@@ -797,7 +797,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 .options-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(120px, 100%), 1fr));
   gap: 12px;
 }
 .opt {
@@ -1516,19 +1516,50 @@ a.act-card { text-decoration: none; }
 /* =========================================================
    Responsive
    ========================================================= */
-@media (max-width: 1100px) {
+/* =========================================================
+   صفحه‌ی درس — سه پله‌ی نمایش
+   دسکتاپِ بزرگ (≥۱۴۴۰): ۳ ستون · لپ‌تاپ و تبلتِ افقی (۱۰۲۴–۱۴۳۹): ۲ ستون
+   تبلتِ عمودی و موبایل (≤۱۰۲۳): ۱ ستون با فهرستِ گام‌های افقی
+   ========================================================= */
+
+/* لپ‌تاپ و تبلتِ افقی: ستونِ پیشرفت به پایینِ صفحه می‌رود تا متن تنگ نشود */
+@media (max-width: 1439px) {
   .lesson-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: 232px minmax(0, 1fr);
+  }
+  .lesson-side.progress-panel {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    align-items: start;
+    position: static;
+  }
+}
+
+/* تبلتِ عمودی و موبایل: تک‌ستون */
+@media (max-width: 1023px) {
+  .lesson-layout {
+    grid-template-columns: minmax(0, 1fr);
   }
   .lesson-side { position: static; }
   .lesson-side.contents { order: -1; }
+  .lesson-side.progress-panel {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
   .step-list {
     flex-direction: row;
     overflow-x: auto;
     padding-bottom: 6px;
     gap: 10px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
   }
-  .step-item { width: auto; white-space: nowrap; }
+  .step-item {
+    width: auto;
+    white-space: nowrap;
+    scroll-snap-align: center;
+  }
 }
 
 @media (max-width: 900px) {
@@ -1570,6 +1601,40 @@ a.act-card { text-decoration: none; }
   .btn { width: 100%; }
   .stage-actions .btn { width: auto; flex: 1 1 100%; }
   .lesson-strip { padding: var(--space-2); }
+}
+
+/* موبایل: اندازه‌های جمع‌وجور و بدون سرریز */
+@media (max-width: 620px) {
+  .main-inner { padding: 20px 16px 72px; }
+  .lesson-band { height: 96px; }
+  .objective-banner { font-size: 16px; padding: 10px 12px; gap: 8px; }
+  .objective-banner svg { width: 24px; height: 24px; }
+  .obj-audio { width: 34px; height: 34px; }
+  .teach-card { padding: var(--space-2); }
+  .teach-card h2 { font-size: 22px; }
+  .activity-card { padding: var(--space-2); }
+  .act-prompt { font-size: 18px; gap: 8px; }
+  .act-prompt .bubble { width: 42px; height: 42px; }
+  .objects-board { padding: var(--space-2); gap: 8px; }
+  .objects-board svg { width: 44px; height: 44px; }
+  .pattern-row { gap: 8px; }
+  .pattern-cell { width: 58px; height: 58px; }
+  .pattern-cell svg { width: 38px; height: 38px; }
+  .pattern-cell.is-unknown { font-size: 24px; }
+  .equation { gap: 8px; }
+  .eq-box { min-width: 56px; min-height: 56px; font-size: 30px; padding: 2px 8px; }
+  .eq-op { font-size: 30px; }
+  .t-numeral { font-size: 38px; }
+  .side-card { padding: 14px; }
+  .step-item { padding: 8px 10px; font-size: 14px; }
+  .step-dot { width: 22px; height: 22px; font-size: 12px; }
+  .lesson-card { padding: var(--space-2); min-height: 0; }
+  .lesson-card h3 { font-size: 18px; }
+}
+
+@media (max-width: 520px) {
+  .opt { font-size: 19px; padding: 10px 12px; min-height: 58px; }
+  .lesson-grid { gap: 12px; }
 }
 
 /* =========================================================
@@ -1789,3 +1854,41 @@ a.act-card { text-decoration: none; }
   .sponsor-heart svg { width: 30px; height: 30px; }
   .sponsor-name { font-size: 20px; }
 }
+
+/* =========================================================
+   سازگاریِ صفحه‌ی درس با اندازه‌های مختلف
+   ========================================================= */
+
+/* تخته‌ی مقایسه‌ی دو گروه (بیشتر/کمتر/برابر) */
+.compare-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  direction: ltr;
+}
+
+/* گزینه‌های متنیِ بلند: یک ستون و راست‌چینِ خوانا */
+.options-grid.is-long { grid-template-columns: minmax(0, 1fr); }
+.options-grid.is-long .opt {
+  justify-content: flex-start;
+  text-align: start;
+  font-size: 18px;
+  min-height: 56px;
+  padding: 10px 14px;
+  line-height: 1.6;
+}
+
+/* شکستنِ واژه‌های بلند — جلوگیری از سرریزِ افقی */
+.act-prompt,
+.opt,
+.objective-banner,
+.t-body,
+.side-card,
+.lesson-card h3,
+.lesson-card p,
+.sponsor-line,
+.dedi-sub,
+.dedication-line { overflow-wrap: break-word; }
+
+/* جایگاهِ پیمایش برای پرش به کارتِ تمرین در موبایل */
+#lesson-center { scroll-margin-top: 88px; }

@@ -1790,7 +1790,10 @@
 
   function textOptions(optData) {
     const labels = optData.labels || {};
-    return `<div class="options-grid" role="group" aria-label="انتخاب پاسخ">
+    /* اگر گزینه‌ای بلند است، گزینه‌ها را تک‌ستون می‌چینیم تا متن شکسته نشود */
+    const longest = (optData.options || []).reduce((m, o) => Math.max(m, String(o).length), 0);
+    const wide = longest > 11 ? ' is-long' : '';
+    return `<div class="options-grid${wide}" role="group" aria-label="انتخاب پاسخ">
       ${optData.options.map(o => {
       const raw = String(o);
       const shown = labels[raw] !== undefined ? labels[raw] : (/^\d+$/.test(raw) ? faDigits(raw) : raw);
@@ -1803,7 +1806,7 @@
     if (kind === 'compareChoose' || kind === 'symbol') {
       const left = objectsBoard('apple', act.left);
       const right = objectsBoard('apple', act.right);
-      return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;direction:ltr">
+      return `<div class="compare-board">
         <div><div class="t-label" style="text-align:center">گروه ۱</div>${left}</div>
         <div><div class="t-label" style="text-align:center">گروه ۲</div>${right}</div>
       </div>
@@ -2347,7 +2350,36 @@
       </div>`;
   }
 
+  /* نگه‌داشتنِ گامِ جاری در دید — مخصوص موبایل و تبلت */
+  let lastStepFocus = { lessonId: null, stepIndex: null };
+  function keepStepChipVisible() {
+    const cur = $('.step-item.is-current');
+    if (!cur) return;
+    const list = cur.parentElement;
+    /* فهرستِ افقی: بدون تغییر دادنِ جای صفحه، فقط خودِ فهرست را می‌غلتانیم */
+    if (list && list.scrollWidth > list.clientWidth + 4) {
+      const target = cur.offsetLeft - (list.clientWidth - cur.offsetWidth) / 2;
+      try { list.scrollLeft = Math.max(0, target); } catch (e) { /* nop */ }
+    }
+    /* هنگام عوض‌شدنِ گام، کارتِ تمرین را به دید می‌آوریم (فقط صفحه‌های باریک) */
+    const sess = state.session;
+    if (!sess) { lastStepFocus = { lessonId: null, stepIndex: null }; return; }
+    const narrow = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 1023px)').matches;
+    const changed = lastStepFocus.lessonId === sess.lessonId
+      && lastStepFocus.stepIndex !== null
+      && lastStepFocus.stepIndex !== sess.stepIndex;
+    lastStepFocus = { lessonId: sess.lessonId, stepIndex: sess.stepIndex };
+    if (changed && narrow) {
+      const center = $('#lesson-center');
+      if (center && typeof center.scrollIntoView === 'function') {
+        center.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      }
+    }
+  }
+
   function afterRender() {
+    /* در صفحه‌های باریک: گامِ جاری را در فهرستِ افقی وسط بیاور */
+    keepStepChipVisible();
     /* خط تقدیم زیر هر فوتر */
     $$('.foot-note').forEach(f => {
       const nxt = f.nextElementSibling;
