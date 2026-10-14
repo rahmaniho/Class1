@@ -219,10 +219,12 @@
           <rect x="68" y="36" width="104" height="14" rx="7" fill="#FFE6C7" stroke="${INK}" stroke-width="3"/>
         </svg>`;
       case 'plant':
-        return `<svg class="big-art" viewBox="0 0 240 180" role="img" aria-label="گیاه با ریشه، ساقه، برگ و گل">
+        return `<svg class="big-art" viewBox="0 0 240 180" role="img" aria-label="گیاه با ریشه، ساقه، چهار برگ و گل">
           <path d="M120 120 V50" stroke="#45B97C" stroke-width="8" stroke-linecap="round"/>
           <path d="M120 88 C100 82 88 68 86 52 C104 54 118 70 120 88z" fill="#45B97C" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
           <path d="M120 78 C140 72 152 58 154 42 C136 44 122 60 120 78z" fill="#45B97C" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M120 112 C104 108 94 98 92 88 C108 90 118 102 120 112z" fill="#45B97C" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M120 106 C136 102 146 92 148 82 C132 84 122 96 120 106z" fill="#45B97C" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
           <circle cx="120" cy="40" r="14" fill="#FF6B5E" stroke="${INK}" stroke-width="2.5"/>
           <g fill="#FFD45A" stroke="${INK}" stroke-width="2.2">
             <circle cx="120" cy="22" r="8"/><circle cx="138" cy="40" r="8"/><circle cx="120" cy="58" r="8"/><circle cx="102" cy="40" r="8"/>
@@ -1039,6 +1041,8 @@
           <div class="activity-row">${acts}</div>
         </section>
 
+        ${sponsorCardHTML()}
+
         <footer class="foot-note">
           <span class="foot-group">
             <span>مدرسه‌ی من · آموزش ریاضی، فارسی و علوم پایه‌ی اول</span>
@@ -1112,6 +1116,80 @@
       </button>`;
   }
 
+  /* ---------------------------------------------------------
+     پخش با پلیرِ خود برنامه: گرفتن لینک مستقیم ویدیو از API آپارات
+     اگر این مسیر در دسترس نبود، همان پلیرِ embedِ آپارات در داخل
+     برنامه نشان داده می‌شود (در هر دو حالت خروج از برنامه نداریم).
+     --------------------------------------------------------- */
+  const aparatSrcCache = {};
+
+  function jwtExp(url) {
+    try {
+      const m = /wmsAuthSign=([^&]+)/.exec(url);
+      if (!m) return 0;
+      const pad = m[1].split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      const json = JSON.parse(atob(pad));
+      return (json.exp || 0) * 1000;
+    } catch (e) { return 0; }
+  }
+
+  function cachedAparatSrc(id) {
+    const now = Date.now();
+    if (aparatSrcCache[id] && aparatSrcCache[id].exp > now + 60000) return aparatSrcCache[id].url;
+    try {
+      const raw = sessionStorage.getItem('aparat-src-' + id);
+      if (raw) {
+        const o = JSON.parse(raw);
+        if (o.exp > now + 60000) { aparatSrcCache[id] = o; return o.url; }
+        sessionStorage.removeItem('aparat-src-' + id);
+      }
+    } catch (e) { /* نادیده گرفته می‌شود */ }
+    return '';
+  }
+
+  function saveAparatSrc(id, url) {
+    const o = { url: url, exp: jwtExp(url) || (Date.now() + 3600000) };
+    aparatSrcCache[id] = o;
+    try { sessionStorage.setItem('aparat-src-' + id, JSON.stringify(o)); } catch (e) { /* نادیده گرفته می‌شود */ }
+  }
+
+  function pickQuality(list) {
+    if (!list || !list.length) return '';
+    const order = ['480p', '360p', '240p', '720p', '144p'];
+    for (let i = 0; i < order.length; i++) {
+      for (let j = 0; j < list.length; j++) {
+        if (list[j].profile === order[i] && list[j].urls && list[j].urls[0]) return list[j].urls[0];
+      }
+    }
+    for (let j = 0; j < list.length; j++) {
+      if (list[j].urls && list[j].urls[0]) return list[j].urls[0];
+    }
+    return '';
+  }
+
+  function resolveAparatFile(id) {
+    const cached = cachedAparatSrc(id);
+    if (cached) return Promise.resolve(cached);
+    if (typeof fetch !== 'function') return Promise.resolve('');
+    return fetch('https://www.aparat.com/api/fa/v1/video/video/show/videohash/' + id,
+      { headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        const attrs = j && j.data && j.data.attributes;
+        const url = pickQuality(attrs && attrs.file_link_all);
+        if (url) saveAparatSrc(id, url);
+        return url || '';
+      })
+      .catch(function () { return ''; });
+  }
+
+  function withTimeout(promise, ms) {
+    return Promise.race([
+      promise,
+      new Promise(function (res) { setTimeout(function () { res(''); }, ms); })
+    ]);
+  }
+
   function openVideoModal(videoId) {
     const v = APARAT_VIDEOS.find(x => x.id === videoId);
     if (!v) return;
@@ -1129,13 +1207,10 @@
           </div>
           <button class="icon-btn" data-act="modal-close" aria-label="بستن">${icon('close')}</button>
         </div>
-        <div class="video-frame" id="video-frame">
+        <div class="video-frame is-loading" id="video-frame">
           <div class="video-spinner" aria-hidden="true"></div>
           ${v.poster ? `<img class="video-poster" src="${v.poster}" alt="">` : ''}
-          <iframe class="video-embed" src="${aparatEmbed(v)}" title="${escapeHtml(v.title)}"
-            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-            allowfullscreen webkitallowfullscreen mozallowfullscreen
-            frameborder="0" scrolling="no"></iframe>
+          <video class="video-native" playsinline controls preload="none" ${v.poster ? `poster="${v.poster}"` : ''}></video>
         </div>
         <div class="video-error" hidden>
           <p class="t-label">ویدیو داخل برنامه بالا نیامد. دوباره تلاش کن؛ اگر باز هم نیامد اینترنت را بررسی کن.</p>
@@ -1151,22 +1226,56 @@
       </div>`;
     document.body.appendChild(wrap);
 
-    /* نگهبان: اگر پلیر تا چند ثانیه نیامد، پیامِ داخل برنامه نشان داده می‌شود (نه ارجاع به بیرون) */
     const frame = wrap.querySelector('.video-frame');
-    const ifr = wrap.querySelector('iframe');
+    const vid = wrap.querySelector('video.video-native');
+    const errBox = wrap.querySelector('.video-error');
     let ready = false;
-    if (ifr) {
+
+    function showError() {
+      if (ready || !document.body.contains(wrap)) return;
+      frame.classList.remove('is-loading');
+      frame.classList.add('is-failed');
+      if (errBox) errBox.hidden = false;
+    }
+
+    function useEmbed() {
+      if (!document.body.contains(wrap)) return;
+      if (wrap.querySelector('iframe')) return;
+      const ifr = document.createElement('iframe');
+      ifr.className = 'video-embed';
+      ifr.setAttribute('src', aparatEmbed(v));
+      ifr.setAttribute('title', v.title);
+      ifr.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; fullscreen');
+      ifr.setAttribute('allowfullscreen', 'true');
+      ifr.setAttribute('frameborder', '0');
+      ifr.setAttribute('scrolling', 'no');
       ifr.addEventListener('load', function () {
         ready = true;
-        if (frame) frame.classList.add('is-ready');
+        frame.classList.remove('is-loading');
+        frame.classList.add('is-ready');
       });
+      if (vid) vid.style.display = 'none';
+      frame.appendChild(ifr);
+      frame.classList.remove('is-failed');
+      if (errBox) errBox.hidden = true;
+      setTimeout(showError, 9000);
     }
-    setTimeout(function () {
-      if (ready || !document.body.contains(wrap)) return;
-      if (frame) frame.classList.add('is-failed');
-      const err = wrap.querySelector('.video-error');
-      if (err) err.hidden = false;
-    }, 7000);
+
+    /* ۱) تلاش برای پخش با پلیرِ خود برنامه */
+    withTimeout(resolveAparatFile(v.id), 4500).then(function (url) {
+      if (!url || !document.body.contains(wrap)) { useEmbed(); return; }
+      ready = true;
+      frame.classList.remove('is-loading');
+      frame.classList.add('is-ready', 'is-native');
+      if (vid) {
+        vid.addEventListener('error', function () { ready = false; useEmbed(); });
+        try {
+          vid.src = url;
+          const pr = vid.play();
+          if (pr && typeof pr.catch === 'function') pr.catch(function () { /* کاربر شروع می‌کند */ });
+        } catch (e) { ready = false; useEmbed(); }
+      }
+    }).catch(function () { useEmbed(); });
   }
 
   /* ---------------------------------------------------------
@@ -1437,6 +1546,14 @@
             </div>
           </aside>
         </div>
+
+        <footer class="foot-note">
+          <span class="foot-group">
+            <span>مدرسه‌ی من · ${escapeHtml(lesson.title)} — ${s.title} پایه‌ی اول</span>
+            ${karenCreditHTML()}
+          </span>
+          <span>ساخته‌شده برای یادگیری شاد و آرام</span>
+        </footer>
       </div>`;
   }
 
@@ -1634,8 +1751,8 @@
     } else if (kind === 'pattern') {
       body = `<div class="center-stage">${patternRowSVG(act.seq)}</div>
         <div class="options-grid">${shuffle(optData.options, act.seq.length * 3 + 1).map(o => `
-          <button class="opt" data-act="answer" data-value="${o}" aria-label="${SHAPE_NAMES[o] || o}">
-            ${shapeSVG(o)}
+          <button class="opt" data-act="answer" data-value="${o}" aria-label="${SHAPE_NAMES[o] || o}" style="flex-direction:column;gap:6px;min-height:110px">
+            ${shapeSVG(o)}<span style="font-size:15px;font-weight:700">${SHAPE_NAMES[o] || o}</span>
           </button>`).join('')}</div>`;
     } else if (kind === 'shape') {
       body = `<div class="options-grid">${shuffle(optData.options, 11).map(o => `
@@ -1898,6 +2015,14 @@
           </div>
         </header>
         <div class="activity-row">${cards}</div>
+
+        <footer class="foot-note">
+          <span class="foot-group">
+            <span>مدرسه‌ی من · بازی‌های آموزشی پایه‌ی اول</span>
+            ${karenCreditHTML()}
+          </span>
+          <span>ساخته‌شده برای یادگیری شاد و آرام</span>
+        </footer>
       </div>`;
   }
 
@@ -2102,6 +2227,10 @@
           <li class="t-label" style="line-height:1.9">• از او بخواهید صدای حروف و اعداد را بلند بگوید.</li>
           <li class="t-label" style="line-height:1.9">• پاسخ اشتباه را با مهربانی به فرصت یادگیری تبدیل کنید.</li>
         </ul>
+        <div class="sponsor-mini">
+          ${icon('heart')}
+          <span>این برنامه با حمایت مالیِ ${SPONSOR.name}، ${SPONSOR.role}، ساخته شده است · ${SPONSOR.audience}</span>
+        </div>
         <div class="stage-actions">
           <button class="btn btn-secondary" data-act="nav" data-hash="#/progress">صفحه‌ی پیشرفت</button>
           <button class="btn btn-secondary" data-act="install-open">نصب برنامه روی دستگاه</button>
@@ -2177,14 +2306,44 @@
   }
 
   /* ---------------------------------------------------------
+     حامیِ برنامه و ویژه‌بودنِ آن برای پایه‌ی اول
+     --------------------------------------------------------- */
+  const SPONSOR = {
+    name: 'سرکار خانم لیلا آبکه',
+    role: 'وکیل پایه یک دادگستری',
+    credit: 'این برنامه با حمایت مالیِ سرکار خانم لیلا آبکه، وکیل پایه یک دادگستری، ساخته شده است.',
+    audience: 'ویژه‌ی پایه‌ی اولِ دبستان شهید قاسمی',
+    dedication: 'تقدیم به دبستان شهید قاسمی مهرگان'
+  };
+
+  /* کارتِ حامی — صفحه‌ی خانه */
+  function sponsorCardHTML() {
+    return `
+      <section class="sponsor-card reveal" aria-label="حامیِ برنامه">
+        <span class="sponsor-heart" aria-hidden="true">${icon('heart')}</span>
+        <div class="sponsor-body">
+          <p class="sponsor-kicker">حامیِ گرامیِ این برنامه</p>
+          <p class="sponsor-name">${SPONSOR.name}</p>
+          <p class="sponsor-role">${SPONSOR.role}</p>
+          <p class="sponsor-lead">این برنامه با حمایت مالیِ ایشان ساخته شده است.</p>
+        </div>
+        <p class="sponsor-audience">${icon('star-yellow')} ${SPONSOR.audience}</p>
+      </section>`;
+  }
+
+  /* ---------------------------------------------------------
      خط تقدیم — زیر فوتر همه‌ی صفحات
      --------------------------------------------------------- */
   function dedicationHTML() {
     return `
-      <div class="dedication-line" role="note">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="${STAR_POINTS}" fill="#FFD45A" stroke="#17213A" stroke-width="1.6" stroke-linejoin="round"/></svg>
-        تقدیم به دبستان شهید قاسمی مهرگان
-        <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="${STAR_POINTS}" fill="#FFD45A" stroke="#17213A" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      <div class="dedi-block" role="note">
+        <div class="dedication-line">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="${STAR_POINTS}" fill="#FFD45A" stroke="#17213A" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          ${SPONSOR.dedication}
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="${STAR_POINTS}" fill="#FFD45A" stroke="#17213A" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="dedi-sub">${SPONSOR.audience}</div>
+        <div class="sponsor-line">${icon('heart')} ${SPONSOR.credit}</div>
       </div>`;
   }
 
@@ -2192,7 +2351,7 @@
     /* خط تقدیم زیر هر فوتر */
     $$('.foot-note').forEach(f => {
       const nxt = f.nextElementSibling;
-      if (!nxt || !nxt.classList.contains('dedication-line')) {
+      if (!nxt || !nxt.classList.contains('dedi-block')) {
         f.insertAdjacentHTML('afterend', dedicationHTML());
       }
     });
