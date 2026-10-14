@@ -852,11 +852,28 @@
   ];
 
   /* بازی‌هایی که تصویر اختصاصی دارند (images/games/{id}.jpg) */
-  const GAME_IMAGES = ['g-count'];
+  const GAME_IMAGES = ['g-count', 'g-letter', 'g-pattern', 'g-nature'];
 
   function gameImg(id) {
     if (GAME_IMAGES.indexOf(id) === -1) return '';
     return `<img class="act-thumb" src="images/games/${id}.jpg" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">`;
+  }
+
+  /* بخش‌هایی که تصویر اختصاصی دارند (images/sections/{id}.jpg) */
+  const SECTION_IMAGES = ['cinema', 'progress', 'adult'];
+
+  function sectionImg(id, cls) {
+    if (SECTION_IMAGES.indexOf(id) === -1) return '';
+    return `<img class="${cls || 'section-img'}" src="images/sections/${id}.jpg" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">`;
+  }
+
+  /* درس‌هایی که نسخه‌ی عریض (سربرگ) دارند */
+  const LESSON_WIDE = ['m1', 'm2', 'm3', 'm4'];
+
+  function lessonBandImg(lesson, subject) {
+    if (LESSON_WIDE.indexOf(lesson.id) !== -1) return lessonImg(lesson.id, { wide: true, eager: true });
+    if (LESSON_IMAGES.indexOf(lesson.id) !== -1) return lessonImg(lesson.id, { eager: true });
+    return subjectArt(subject, { alt: '' });
   }
 
   function lessonImg(id, opts) {
@@ -1135,6 +1152,7 @@
             <button class="btn btn-quiet" data-act="nav" data-hash="#/">${icon('arrow-left')} بازگشت به خانه</button>
           </div>
           <p class="t-label" style="margin-bottom:18px">انیمیشن «ماجرای حروف»؛ شعر، موزیک پیانوی ملایم و تلفظ کامل الفبا · مدت: ۱:۴۲</p>
+          <figure class="img-frame section-frame">${sectionImg('cinema')}</figure>
           <figure class="video-frame">
             <video controls playsinline preload="metadata" poster="videos/majara-horof-poster.jpg">
               <source src="videos/majara-horof.mp4" type="video/mp4">
@@ -1350,7 +1368,7 @@
         <header class="page-head">
           <button class="back-link" data-act="subject" data-subject="${subject}">${icon('arrow-right')} درس‌های ${s.title}</button>
           <figure class="img-frame lesson-band">
-            ${lessonImg(lesson.id, { wide: true, eager: true }) || subjectArt(subject, { alt: '' })}
+            ${lessonBandImg(lesson, subject)}
           </figure>
           <h1 class="t-heading">${escapeHtml(lesson.title)}</h1>
           <div class="objective-banner">${icon('target')} <span>هدف یادگیری: ${escapeHtml(lesson.objective)}</span></div>
@@ -1951,6 +1969,7 @@
           <button class="back-link" data-act="nav" data-hash="#/">${icon('arrow-right')} بازگشت به خانه</button>
           <h1 class="t-display">پیشرفت من</h1>
           <p class="t-body measure">هر قدم کوچک، یک یادگیری تازه است. به کارت نگاه کن!</p>
+          <figure class="img-frame section-frame">${sectionImg('progress')}</figure>
         </header>
 
         <div class="stat-grid" style="margin-bottom:24px">
@@ -2012,6 +2031,7 @@
           <h2 class="t-sub" id="adult-title">فضای بزرگ‌ترها</h2>
           <button class="icon-btn" data-act="modal-close" aria-label="بستن">${icon('close')}</button>
         </div>
+        <figure class="img-frame section-frame">${sectionImg('adult')}</figure>
         <p class="t-body">برای ورود، جمع زیر را حساب کنید:</p>
         <p class="t-numeral" style="text-align:center">۷ ＋ ۵ ＝ ؟</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
