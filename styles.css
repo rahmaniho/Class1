@@ -1125,7 +1125,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 .stage-banner img { object-position: center 42%; }
 
 /* =========================================================
-   سینمای حروف
+   ویدیوهای آموزشی و تلفظِ الفبا
    ========================================================= */
 .h-ico { width: 26px; height: 26px; display: inline-block; vertical-align: -5px; }
 .video-frame {
@@ -1255,57 +1255,13 @@ ul { margin: 0; padding: 0; list-style: none; }
   font-weight: 700;
 }
 .dedication-line svg { width: 15px; height: 15px; flex: none; }
-.cinema-banner {
-  display: flex;
-  gap: var(--space-3);
-  align-items: center;
-  width: 100%;
-  padding: 14px;
-  background: var(--surface-blue);
-  border: 2px solid var(--ink);
-  border-radius: var(--r-card);
-  cursor: pointer;
-  text-align: start;
-  color: var(--ink);
-  font-family: var(--font);
-  transition: transform 150ms ease-out, box-shadow 150ms ease-out;
-}
-.cinema-banner:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
-.cinema-banner:focus-visible {
-  outline: 3px solid var(--yellow);
-  outline-offset: 2px;
-}
-.cinema-banner img {
-  width: min(46%, 420px);
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  border-radius: 12px;
-  border: 2px solid var(--ink);
-  display: block;
-  flex-shrink: 0;
-}
-.cinema-copy { display: flex; flex-direction: column; gap: 8px; }
-.cinema-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 800;
-  font-size: 15px;
-}
-.cinema-kicker svg { width: 22px; height: 22px; }
-.cinema-title { font-size: 24px; font-weight: 800; }
-.cinema-desc { color: var(--ink-muted); font-size: 15px; line-height: 1.9; }
-.poem-row {
+.audio-row {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
 }
 a.act-card { text-decoration: none; }
 .ext-card:hover .act-link { color: var(--coral); }
-@media (max-width: 720px) {
-  .cinema-banner { flex-direction: column; align-items: stretch; }
-  .cinema-banner img { width: 100%; }
-}
 
 .island-art {
   min-height: 180px;

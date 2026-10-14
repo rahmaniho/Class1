@@ -20,7 +20,8 @@ const FILES = [
   'sw.js'
 ];
 
-const DIRS = ['images', 'audio', 'videos'];
+const DIRS = ['images', 'audio'];      /* همیشه لازم */
+const OPTIONAL_DIRS = ['videos'];      /* اگر نباشد، نادیده گرفته می‌شود */
 
 async function exists(p) {
   try { await stat(p); return true; } catch { return false; }
@@ -39,6 +40,10 @@ async function main() {
     const src = join(root, d);
     if (!(await exists(src))) throw new Error('پوشه‌ی لازم پیدا نشد: ' + d);
     await cp(src, join(dist, d), { recursive: true });
+  }
+  for (const d of OPTIONAL_DIRS) {
+    const src = join(root, d);
+    if (await exists(src)) await cp(src, join(dist, d), { recursive: true });
   }
 
   /* پرونده‌ی مشخصاتِ ساخت — برای نمایش در صفحه‌ی دانلود */

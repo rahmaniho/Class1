@@ -18,8 +18,7 @@ const CORE = [
   'images/icons/apple-touch-icon.png',
   'images/karensoft/mark.png',
   'images/karensoft/wordmark-fa.png',
-  'images/karensoft/wordmark-en.png',
-  'videos/majara-horof-poster.jpg'
+  'images/karensoft/wordmark-en.png'
 ];
 
 self.addEventListener('install', (ev) => {

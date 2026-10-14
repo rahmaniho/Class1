@@ -12,7 +12,7 @@ const ok = (c, n) => { if (c) { pass++; console.log('  ✓ ' + n); } else { fail
   ok(fs.existsSync(DIST), 'پوشه‌ی dist وجود دارد');
   const need = ['index.html', 'app.js', 'data.js', 'styles.css', 'manifest.json', 'sw.js'];
   need.forEach(f => ok(fs.existsSync(DIST + '/' + f), f + ' در بسته هست'));
-  ['images', 'audio', 'videos'].forEach(d => ok(fs.existsSync(DIST + '/' + d), d + '/ در بسته هست'));
+  ['images', 'audio'].forEach(d => ok(fs.existsSync(DIST + '/' + d), d + '/ در بسته هست'));
 
   /* اجرای برنامه از درون dist */
   const html = fs.readFileSync(DIST + '/index.html', 'utf8');
@@ -35,7 +35,7 @@ const ok = (c, n) => { if (c) { pass++; console.log('  ✓ ' + n); } else { fail
   const appSrc = fs.readFileSync(DIST + '/app.js', 'utf8') + fs.readFileSync(DIST + '/data.js', 'utf8');
   (appSrc.match(/images\/[A-Za-z0-9_\-\/.]+\.(?:png|jpg|jpeg)/g) || []).forEach(m => refs.add(m));
   (appSrc.match(/audio\/[A-Za-z0-9_\-\/.]+\.mp3/g) || []).forEach(m => refs.add(m));
-  (appSrc.match(/videos\/[A-Za-z0-9_\-\/.]+\.(?:jpg|png|mp4)/g) || []).forEach(m => refs.add(m));
+  /* پوشه‌ی videos اختیاری است (انیمیشن حذف شده) */
 
   let missing = [];
   refs.forEach(r => { if (r && !/^https?:|^data:|^#/.test(r) && !fs.existsSync(DIST + '/' + r)) missing.push(r); });

@@ -766,7 +766,7 @@
     if (parts[0] === 'games') return { view: 'games' };
     if (parts[0] === 'game') return { view: 'game', gameId: parts[1] };
     if (parts[0] === 'progress') return { view: 'progress' };
-    if (parts[0] === 'cinema') return { view: 'cinema' };
+    if (parts[0] === 'cinema' || parts[0] === 'videos') return { view: 'videos' };
     if (parts[0] === 'install') return { view: 'install' };
     return { view: 'home' };
   }
@@ -1033,25 +1033,10 @@
 
         <section class="section">${strip}</section>
 
-        <section class="section" aria-label="سینمای حروف">
-          <div class="section-head">
-            <h2 class="t-heading">سینمای حروف</h2>
-            <button class="btn btn-quiet" data-act="nav" data-hash="#/cinema">تماشای انیمیشن</button>
-          </div>
-          <button class="cinema-banner reveal" data-act="nav" data-hash="#/cinema" aria-label="تماشای انیمیشن ماجرای حروف">
-            <img src="videos/majara-horof-poster.jpg" alt="ماجرای حروف — سحر کوچولو و حروف الفبا" loading="lazy">
-            <span class="cinema-copy">
-              <span class="cinema-kicker">${icon('play')} تماشا کن</span>
-              <span class="cinema-title">ماجرای حروف</span>
-              <span class="cinema-desc">انیمیشن شعر و موزیک کودکانه برای یادگیری الفبا</span>
-            </span>
-          </button>
-        </section>
-
         <section class="section" aria-label="ویدیوهای آموزشی">
           <div class="section-head">
             <h2 class="t-heading">ویدیوهای آموزشی</h2>
-            <button class="btn btn-quiet" data-act="nav" data-hash="#/cinema">همه‌ی ویدیوها</button>
+            <button class="btn btn-quiet" data-act="nav" data-hash="#/videos">همه‌ی ویدیوها</button>
           </div>
           <div class="activity-row">${featured.map(videoCardHTML).join('')}</div>
         </section>
@@ -1302,45 +1287,27 @@
   }
 
   /* ---------------------------------------------------------
-     سینمای حروف (ویدیوی انیمیشن)
+     صفحه‌ی ویدیوهای آموزشی
      --------------------------------------------------------- */
   function renderCinema() {
     return `
       <div class="main-inner">
-        <section class="section" aria-label="سینمای حروف">
+        <section class="section" aria-label="ویدیوهای آموزشی">
           <div class="section-head">
-            <h1 class="t-heading" style="font-size:30px">${icon('play', 'h-ico')} سینمای حروف</h1>
+            <h1 class="t-heading" style="font-size:30px">${icon('play', 'h-ico')} ویدیوهای آموزشی</h1>
             <button class="btn btn-quiet" data-act="nav" data-hash="#/">${icon('arrow-left')} بازگشت به خانه</button>
           </div>
-          <p class="t-label" style="margin-bottom:18px">انیمیشن «ماجرای حروف»؛ شعر، موزیک پیانوی ملایم و تلفظ کامل الفبا · مدت: ۱:۴۲</p>
+          <p class="t-label" style="margin-bottom:18px">ویدیوها را تماشا کن و تلفظِ حروف الفبا را بشنو</p>
           <figure class="img-frame section-frame">${sectionImg('cinema')}</figure>
-          <figure class="video-frame">
-            <video controls playsinline preload="metadata" poster="videos/majara-horof-poster.jpg">
-              <source src="videos/majara-horof.mp4" type="video/mp4">
-              مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.
-            </video>
-          </figure>
-          <div class="stage-actions" style="margin-top:18px">
-            <a class="btn btn-primary" href="videos/majara-horof.mp4" download>${icon('play')} دانلود ویدیو</a>
-            <button class="btn btn-secondary" data-act="nav" data-hash="#/lessons/farsi">${icon('book')} تمرین حروف</button>
-          </div>
         </section>
 
-        <section class="section" aria-label="شعر داستان">
+        <section class="section" aria-label="فیلم‌های آموزشی">
           <div class="section-head">
-            <h2 class="t-heading">شعر ماجرای حروف</h2>
-            <p class="t-label">هر بخش از شعر را جداگانه بشنو</p>
+            <h2 class="t-heading">فیلم‌های آموزشی</h2>
+            <p class="t-label">برای تماشا در آپارات · الفبا، شعر، لالایی، علوم و ریاضی</p>
           </div>
-          <div class="poem-row">
-            ${[
-              { n: 1, label: 'سحر بیدار می‌شود', text: 'سحر کوچولو از خواب پاشد. ستاره‌ی خندان گفت: سلام! بیا، بیایید ببینیم.' },
-              { n: 2, label: 'الف، به، په، ته', text: 'الف، به، په، ته. آفتاب آمد و خندید. برف بارید. پرواز کردیم. توپ قرمز را انداختیم.' },
-              { n: 3, label: 'ثه تا دال', text: 'ثه، جیم، چه، حا، خا، دال. هر حرف یک قصه‌ی قشنگ دارد.' },
-              { n: 4, label: 'رقص حروف و شب‌به‌خیر', text: 'ره، زه، ژه رقصیدند. الفبا خوابید زیر نور ماه. شب به خیر حرف‌های مهربان.' }
-            ].map(p => `
-              <button class="audio-btn" data-act="speak" data-text="${escapeHtml(p.text)}" data-audio="stories/poem-${p.n}" aria-label="شنیدن ${escapeHtml(p.label)}">
-                ${icon('speaker')} <span>${faDigits(p.n)} · ${p.label}</span>
-              </button>`).join('')}
+          <div class="activity-row">
+            ${APARAT_VIDEOS.map(videoCardHTML).join('')}
           </div>
         </section>
 
@@ -1349,7 +1316,7 @@
             <h2 class="t-heading">الفبای فارسی را شمرده بشنویم</h2>
             <p class="t-label">هر گروه از حروف را با تلفظ دقیق و شمرده تکرار کن</p>
           </div>
-          <div class="poem-row">
+          <div class="audio-row">
             ${[
               { n: 1, label: 'الف تا حا', text: 'الف. به. په. ته. ثه. جیم. چه. حا.' },
               { n: 2, label: 'خا تا شین', text: 'خا. دال. ذال. ره. زه. ژه. سین. شین.' },
@@ -1362,43 +1329,16 @@
           </div>
         </section>
 
-        <section class="section" aria-label="ویدیوهای آموزشی">
-          <div class="section-head">
-            <h2 class="t-heading">ویدیوهای آموزشی</h2>
-            <p class="t-label">برای تماشا در آپارات · الفبا، شعر، لالایی، علوم و ریاضی</p>
-          </div>
-          <div class="activity-row">
-            ${APARAT_VIDEOS.map(videoCardHTML).join('')}
-          </div>
-        </section>
-
-        <section class="section" aria-label="درباره‌ی داستان">
-          <div class="section-head">
-            <h2 class="t-heading">داستان از چه قرار است؟</h2>
-          </div>
-          <div class="activity-row">
-            ${[
-              { title: 'سحر و ستاره', desc: 'سحر کوچولو با ستاره‌ی خندان همراه می‌شود تا حروف را پیدا کند.', art: 'seasons' },
-              { title: 'شعر آموزشی', desc: 'شعر کودکانه «آفتاب، برف، پرواز، توپ» حرف‌ها را به خاطرماندنی می‌کند.', art: 'lettercard' },
-              { title: 'موزیک ملایم', desc: 'آهنگ لالایی با حال‌وهوای موسیقی ایرانی، همراه آرام کودکان.', art: 'sound' }
-            ].map(a => `
-              <div class="act-card reveal">
-                <div class="act-ill">${bigArtSVG(a.art)}</div>
-                <div class="act-title">${a.title}</div>
-                <div class="act-desc">${a.desc}</div>
-              </div>`).join('')}
-          </div>
-        </section>
-
         <footer class="foot-note">
           <span class="foot-group">
-            <span>مدرسه‌ی من · سینمای حروف</span>
+            <span>مدرسه‌ی من · ویدیوهای آموزشی</span>
             ${karenCreditHTML()}
           </span>
-          <span>شعر و موزیک کودکانه برای یادگیری الفبا</span>
+          <span>تماشای فیلم‌های آموزشی و شنیدنِ تلفظِ الفبا</span>
         </footer>
       </div>`;
   }
+
 
   /* ---------------------------------------------------------
      نما: فهرست درس‌ها
@@ -1450,7 +1390,7 @@
         <section class="section" aria-label="ویدیوهای آموزشی ${escapeHtml(s.title)}">
           <div class="section-head">
             <h2 class="t-heading">ویدیوهای آموزشی ${s.title}</h2>
-            <button class="btn btn-quiet" data-act="nav" data-hash="#/cinema">همه‌ی ویدیوها</button>
+            <button class="btn btn-quiet" data-act="nav" data-hash="#/videos">همه‌ی ویدیوها</button>
           </div>
           <div class="activity-row">${vids.map(videoCardHTML).join('')}</div>
         </section>`;
@@ -2317,7 +2257,7 @@
     } else if (r.view === 'progress') {
       activeNav = 'progress';
       html = renderProgress();
-    } else if (r.view === 'cinema') {
+    } else if (r.view === 'videos') {
       html = renderCinema();
     } else if (r.view === 'install') {
       html = renderInstall();
