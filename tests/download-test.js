@@ -32,6 +32,13 @@ const ok = (c, n) => { if (c) { pass++; console.log('  ✓ ' + n); } else { fail
   ok(/softprops\/action-gh-release/.test(wfA), 'در صفحه‌ی دانلودها منتشر می‌شود');
   ok(/madrese-man-web\.zip/.test(wfA), 'بسته‌ی آفلاین هم ساخته می‌شود');
   const wfI = fs.readFileSync(ROOT + '/.github/workflows/build-ios.yml', 'utf8');
+  const wfK = fs.readFileSync(ROOT + '/.github/workflows/generate-keystore.yml', 'utf8');
+  ok(/keytool -genkeypair/.test(wfK), 'خطِ تولیدِ کلیدِ امضا، کلید می‌سازد');
+  ok(/madrese-man-keystore/.test(wfK), 'کلید به‌صورت artifact بارگذاری می‌شود');
+  ok(/secrets\.ANDROID_KEYSTORE_BASE64 != ''/.test(wfA), 'امضای رسمی فقط وقتی کلید هست اجرا می‌شود');
+  ok(/assembleRelease/.test(wfA) && /bundleRelease/.test(wfA), 'نسخه‌ی امضاشده (APK و AAB) ساخته می‌شود');
+  ok(/assembleDebug/.test(wfA), 'اگر کلید نباشد، نسخه‌ی آزمایشی ساخته می‌شود');
+  ok(/madrese-man-android\.\*/.test(wfA), 'انتشار شاملِ APK و AAB است');
   ok(/vars\.BUILD_IOS == 'true'/.test(wfI), 'کارِ آی‌او‌اس تا وقتی خودمان نخواهیم اجرا نمی‌شود');
   ok(/xcodebuild/.test(wfI) && /cap add ios/.test(wfI), 'مسیرِ ساختِ آی‌او‌اس درست است');
 
