@@ -729,6 +729,67 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 .teach-step .step-dot { margin-top: 2px; }
 
+/* ---- گام‌های آموزش (کارت‌های تصویری + صدا) ---- */
+.teach-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.teach-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink-muted);
+  margin-bottom: 6px;
+}
+.teach-kicker svg { width: 22px; height: 22px; }
+.teach-audio-all .audio-btn { min-height: 48px; }
+.teach-step-block {
+  background: var(--canvas);
+  border: 2px solid var(--border);
+  border-radius: var(--r-activity);
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.teach-step-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.teach-step-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink-muted);
+  flex: 1;
+  min-width: 0;
+}
+.teach-step-audio { flex: none; }
+.teach-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: stretch;
+}
+.teach-step-body .objects-board,
+.teach-step-body .compare-board { margin: 0; }
+.teach-step-body .t-label { text-align: center; margin: 0; }
+.teach-step-body .center-stage { padding: 0; }
+.teach-step-body .story-text { background: var(--surface); }
+.story-audio-row { margin-top: 12px; }
+.glyph-lg { font-size: 52px; font-weight: 800; line-height: 1.1; }
+.word-cap { font-size: 20px; }
+@media (max-width: 620px) {
+  .teach-head { align-items: stretch; }
+  .teach-audio-all .audio-btn { width: 100%; justify-content: center; }
+  .teach-step-title { font-size: 14px; }
+}
+
 .progress-panel .bar {
   height: 14px;
   border: 2px solid var(--ink);

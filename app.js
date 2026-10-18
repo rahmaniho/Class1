@@ -956,14 +956,28 @@
       aria-label="شنیدن هدف درس: ${escapeHtml(lesson.objective || '')}">${icon('speaker')}${o.label ? ' <span>' + escapeHtml(o.label) + '</span>' : ''}</button>`;
   }
 
+  /* متنِ گفتارِ هر گام — اگر نبود، از متن یا عنوان تصویر ساخته می‌شود */
+  function teachSay(t) {
+    if (t && t.say) return t.say;
+    if (!t) return '';
+    if (t.kind === 'text') return t.text || '';
+    if (t.kind === 'story') return (t.title || '') + '. ' + (t.text || '');
+    return t.caption || '';
+  }
+
+  function teachNarration(lesson) {
+    return (lesson.teach || []).map(teachSay).filter(Boolean).join(' ');
+  }
+
   function lessonAudioHTML(lesson) {
     if (LESSON_AUDIO.indexOf(lesson.id) === -1) return '';
-    const spoken = (lesson.objective || '') + ' ' + ((lesson.teach && lesson.teach[0] && lesson.teach[0].text) || '');
     return `
-      <button class="audio-btn lesson-audio" data-act="speak" data-text="${escapeHtml(spoken)}" data-audio="lessons/${lesson.id}" aria-label="شنیدن توضیح درس">
-        ${icon('speaker')} <span>توضیح کامل درس را بشنو</span>
+      <button class="audio-btn lesson-audio" data-act="speak" data-text="${escapeHtml(teachNarration(lesson))}" data-audio="lessons/${lesson.id}" aria-label="شنیدن همه‌ی آموزشِ درس">
+        ${icon('speaker')} <span>شنیدن همه‌ی آموزش</span>
       </button>`;
   }
+
+
 
   /* درس‌هایی که تصویر اختصاصی دارند (images/lessons/{id}.jpg و {id}-wide.jpg) */
   const LESSON_IMAGES = [
@@ -1624,60 +1638,104 @@
     return i >= 0 && i < order.length - 1 ? order[i + 1] : null;
   }
 
+  /* عنوانِ کوتاهِ هر نوع گام — بالای کارتِ آموزش */
+  function teachStepTitle(t) {
+    switch (t && t.kind) {
+      case 'text': return 'توضیح';
+      case 'objects': return 'نگاه کن و بشمار';
+      case 'letters': return 'حرف‌ها و کلمه‌ها';
+      case 'story': return 'داستان';
+      case 'equation': return 'جمع و تفریق';
+      case 'numline': return 'ردیف اعداد';
+      case 'tenframe': return 'ده‌چارچوب';
+      case 'placevalue': return 'ده‌ها و یکان‌ها';
+      case 'pattern': return 'الگو';
+      case 'compare': return 'مقایسه';
+      case 'clock': return 'ساعت';
+      case 'shapes': return 'شکل‌های هندسی';
+      default: return 'تصویر';
+    }
+  }
+
+  function renderTeachStepBody(lesson, t) {
+    if (t.kind === 'text') {
+      return `<p class="t-body">${escapeHtml(t.text)}</p>`;
+    }
+    if (t.kind === 'objects') {
+      return `${objectsBoard(t.object, t.count)}${t.caption ? `<p class="t-label">${escapeHtml(t.caption)}</p>` : ''}`;
+    }
+    if (t.kind === 'letters') {
+      const tiles = t.letters.map(l => `
+        <div class="teach-fig">
+          <div class="glyph-lg">${l}</div>
+          <button class="audio-btn mini" data-act="speak" data-text="${escapeHtml(l)}" aria-label="شنیدن حرف ${escapeHtml(l)}">${icon('speaker')}</button>
+        </div>`).join('');
+      const words = (t.words || []).map(w => `
+        <div class="teach-fig">
+          <div class="cap word-cap">${escapeHtml(w[1])}</div>
+          <button class="audio-btn mini" data-act="speak" data-text="${escapeHtml(w[1])}" aria-label="شنیدن کلمه‌ی ${escapeHtml(w[1])}">${icon('speaker')}</button>
+        </div>`).join('');
+      return `<div class="teach-figs">${tiles}</div><div class="teach-figs">${words}</div>`;
+    }
+    if (t.kind === 'story') {
+      return `<div class="story-text"><strong>${escapeHtml(t.title)}</strong><br>${escapeHtml(t.text)}
+        ${t.audio ? `<div class="story-audio-row"><button class="audio-btn" data-act="speak" data-text="${escapeHtml(t.text)}" data-audio="${escapeHtml(t.audio)}" aria-label="شنیدن داستان ${escapeHtml(t.title)}">${icon('speaker')} <span>شنیدن داستان</span></button></div>` : ''}
+      </div>`;
+    }
+    if (t.kind === 'equation') {
+      return `<div class="center-stage">${equationSVG(t.a, t.op, t.b)}<p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
+    }
+    if (t.kind === 'numline') {
+      return `<div class="center-stage">${numlineSVG(t.from, t.to)}<p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
+    }
+    if (t.kind === 'tenframe') {
+      return `<div class="center-stage">${tenframeSVG(t.value)}<p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
+    }
+    if (t.kind === 'placevalue') {
+      return `<div class="center-stage">
+        <div class="equation">
+          <span class="eq-box" style="background:var(--surface-blue)">${faDigits(t.value)}</span>
+          <span class="eq-op">＝</span>
+          <span class="eq-box">۱۰</span><span class="eq-op">＋</span><span class="eq-box">${faDigits(t.value - 10)}</span>
+        </div>
+        <p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
+    }
+    if (t.kind === 'pattern') {
+      return `<div class="center-stage">${patternRowSVG(t.seq)}<p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
+    }
+    if (t.kind === 'compare') {
+      return `<div class="compare-board">
+        <div><div class="t-label" style="text-align:center">گروه ۱</div>${objectsBoard('apple', t.left)}</div>
+        <div><div class="t-label" style="text-align:center">گروه ۲</div>${objectsBoard('apple', t.right)}</div>
+      </div>
+      <p class="t-label" style="text-align:center">${escapeHtml(t.caption || '')}</p>`;
+    }
+    if (t.kind === 'clock') {
+      return `<div class="center-stage">${clockSVG(t.hour)}<p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
+    }
+    /* نماهای تصویری */
+    return `<div class="center-stage">${bigArtSVG(t.kind)}<p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
+  }
+
   function renderTeach(lesson, s) {
-    const figs = (lesson.teach || []).map((t, i) => {
-      if (t.kind === 'text') {
-        return `<div class="teach-step"><span class="step-dot">${faDigits(i + 1)}</span><p class="t-body">${escapeHtml(t.text)}</p></div>`;
-      }
-      if (t.kind === 'objects') {
-        return `<div class="teach-figs">${objectsBoard(t.object, t.count)}<p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
-      }
-      if (t.kind === 'letters') {
-        const tiles = t.letters.map(l => `
-          <div class="teach-fig">
-            <div style="font-size:52px;font-weight:800;line-height:1.1">${l}</div>
-            <button class="audio-btn mini" data-act="speak" data-text="${escapeHtml(l)}" aria-label="شنیدن حرف ${escapeHtml(l)}">${icon('speaker')}</button>
-          </div>`).join('');
-        const words = (t.words || []).map(w => `
-          <div class="teach-fig">
-            <div class="cap" style="font-size:20px">${escapeHtml(w[1])}</div>
-            <button class="audio-btn mini" data-act="speak" data-text="${escapeHtml(w[1])}" aria-label="شنیدن کلمه‌ی ${escapeHtml(w[1])}">${icon('speaker')}</button>
-          </div>`).join('');
-        return `<div class="teach-figs">${tiles}</div><div class="teach-figs">${words}</div>`;
-      }
-      if (t.kind === 'story') {
-        return `<div class="story-text"><strong>${escapeHtml(t.title)}</strong><br>${escapeHtml(t.text)}
-          ${t.audio ? `<div style="margin-top:12px"><button class="audio-btn" data-act="speak" data-text="${escapeHtml(t.text)}" data-audio="${escapeHtml(t.audio)}" aria-label="شنیدن داستان ${escapeHtml(t.title)}">${icon('speaker')} <span>شنیدن داستان</span></button></div>` : ''}
-        </div>`;
-      }
-      if (t.kind === 'equation') {
-        return `<div class="center-stage">${equationSVG(t.a, t.op, t.b)}<p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
-      }
-      if (t.kind === 'numline') {
-        return `<div class="center-stage">${numlineSVG(t.from, t.to)}<p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
-      }
-      if (t.kind === 'tenframe') {
-        return `<div class="center-stage">${tenframeSVG(t.value)}<p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
-      }
-      if (t.kind === 'placevalue') {
-        return `<div class="center-stage">
-          <div class="equation">
-            <span class="eq-box" style="background:var(--surface-blue)">${faDigits(t.value)}</span>
-            <span class="eq-op">＝</span>
-            <span class="eq-box">۱۰</span><span class="eq-op">＋</span><span class="eq-box">${faDigits(t.value - 10)}</span>
-          </div>
-          <p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
-      }
-      if (t.kind === 'pattern') {
-        return `<div class="center-stage">${patternRowSVG(t.seq)}<p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
-      }
-      /* نماهای تصویری */
-      return `<div class="center-stage">${bigArtSVG(t.kind)}<p class="t-label">${escapeHtml(t.caption || '')}</p></div>`;
-    }).join('');
+    const figs = (lesson.teach || []).map((t, i) => `
+      <section class="teach-step-block reveal" aria-label="گام ${faDigits(i + 1)}: ${escapeHtml(teachStepTitle(t))}">
+        <header class="teach-step-head">
+          <span class="step-dot">${faDigits(i + 1)}</span>
+          <span class="teach-step-title">${escapeHtml(teachStepTitle(t))}</span>
+        </header>
+        <div class="teach-step-body">${renderTeachStepBody(lesson, t)}</div>
+      </section>`).join('');
 
     return `
       <article class="teach-card is-focus reveal">
-        <h2>${escapeHtml(lesson.title)}</h2>
+        <div class="teach-head">
+          <div>
+            <p class="teach-kicker">${icon('book')} آموزش گام‌به‌گام</p>
+            <h2>${escapeHtml(lesson.title)}</h2>
+          </div>
+          <div class="teach-audio-all">${lessonAudioHTML(lesson)}</div>
+        </div>
         <div class="teach-steps">${figs}</div>
         <div class="stage-actions">
           <button class="btn btn-primary" data-act="step-next">${icon('play')} برویم سراغ تمرین</button>
