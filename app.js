@@ -1789,7 +1789,7 @@
     const answered = state.session && state.session.answered[idx];
 
     let body = '';
-    let prompt = act.prompt || 'تمرین';
+    let prompt = act.prompt || act.question || 'تمرین';
 
     if (kind === 'count') {
       body = objectsBoard(act.object, act.count) + numberOptions(optData);
@@ -1881,8 +1881,8 @@
       return `<div class="clock-wrap">${clockSVG(act.hour)}</div>`;
     }
     if (kind === 'read') {
-      return `<div class="story-text">${escapeHtml(act.text)}</div>
-        <p class="t-sub" style="text-align:center">${escapeHtml(act.question)}</p>`;
+      /* صورتِ سؤال در نوارِ بالای تمرین (همراه با دکمه‌ی صدا) نشان داده می‌شود */
+      return `<div class="story-text">${escapeHtml(act.text)}</div>`;
     }
     if (kind === 'observe') {
       return `<div class="center-stage">${sceneSVG(act.scene)}</div>`;
