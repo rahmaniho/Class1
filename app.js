@@ -676,17 +676,66 @@
 
   /* ---------------------------------------------------------
      گفتار (در صورت پشتیبانی مرورگر)
+     طبیعی‌ترین صدای فارسیِ نصب‌شده را انتخاب می‌کنیم؛ اگر
+     فایل صوتیِ ضبط‌شده باشد، همان اول پخش می‌شود.
      --------------------------------------------------------- */
-  function speak(text) {
+  let voiceList = [];
+  function loadVoices() {
     try {
-      if (!('speechSynthesis' in window)) return false;
+      voiceList = window.speechSynthesis.getVoices() || [];
+    } catch (e) {
+      voiceList = [];
+    }
+  }
+  function voiceScore(v) {
+    const n = String(v.name || '').toLowerCase();
+    let score = 0;
+    if (/natural|neural|premium|enhanced|online/.test(n)) score += 60;
+    if (/google/.test(n)) score += 35;
+    if (/microsoft/.test(n)) score += 25;
+    if (/dariush|farid|parisa|nava|sara|maryam|homa/.test(n)) score += 20;
+    if (v.default) score += 8;
+    if (v.localService) score += 4;
+    return score;
+  }
+  function persianVoice() {
+    if (!voiceList.length) loadVoices();
+    const fa = voiceList.filter(v => /^fa($|-)/i.test(String(v.lang || '')));
+    if (!fa.length) return null;
+    return fa.slice().sort((a, b) => voiceScore(b) - voiceScore(a))[0];
+  }
+  if ('speechSynthesis' in window) {
+    loadVoices();
+    /* در کروم فهرستِ صداها بعد از بارگذاری می‌رسد */
+    if (typeof window.speechSynthesis.addEventListener === 'function') {
+      window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    } else {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }
+
+  function speak(text, onDone) {
+    let finished = false;
+    const finish = function () {
+      if (finished) return;
+      finished = true;
+      if (typeof onDone === 'function') onDone();
+    };
+    try {
+      if (!('speechSynthesis' in window)) { finish(); return false; }
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
+      const voice = persianVoice();
+      if (voice) u.voice = voice;
       u.lang = 'fa-IR';
-      u.rate = 0.9;
+      u.rate = 0.96;
+      u.pitch = 1.02;
+      u.onend = finish;
+      u.onerror = finish;
       window.speechSynthesis.speak(u);
       return true;
     } catch (e) {
+      finish();
       return false;
     }
   }
@@ -722,26 +771,55 @@
   };
 
   const audioCache = {};
+  let currentAudio = null;
 
-  function playSound(text, directRel) {
+  /* کلیدِ یکسانِ فارسی → نامِ فایلِ صوتیِ سؤال
+     (همین الگوریتم در زمان ساختِ فایل‌ها هم استفاده می‌شود) */
+  function audioKey(text) {
+    const s = String(text || '').trim();
+    let h = 5381;
+    for (let i = 0; i < s.length; i++) {
+      h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+    }
+    return (h >>> 0).toString(36);
+  }
+  function questionAudioRel(text) {
+    const s = String(text || '').trim();
+    return s ? 'questions/q-' + audioKey(s) : '';
+  }
+
+  function playSound(text, directRel, onDone) {
     const raw = String(text || '').trim();
-    if (!raw && !directRel) return false;
+    if (!raw && !directRel) {
+      if (typeof onDone === 'function') onDone();
+      return false;
+    }
     const key = raw.replace(/\u200c/g, ''); /* حذف نیم‌فاصله برای جست‌وجوی نگاشت */
     const rel = directRel || AUDIO_FILES[key] || AUDIO_FILES[raw];
     if (rel && typeof Audio !== 'undefined') {
       try {
+        /* پخشِ هم‌زمانِ دو صدا را نمی‌خواهیم */
+        if (currentAudio && currentAudio !== audioCache[rel] && !currentAudio.paused) {
+          try { currentAudio.pause(); } catch (e) { /* ignore */ }
+        }
         if (!audioCache[rel]) {
           audioCache[rel] = new Audio('audio/' + rel + '.mp3');
+          audioCache[rel].preload = 'auto';
         }
         const a = audioCache[rel];
-        if (a.error) {
-          delete audioCache[rel];
-          return speak(raw);
-        }
+        currentAudio = a;
         let fellBack = false;
         const fallback = function () {
-          if (!fellBack) { fellBack = true; speak(raw); }
+          if (!fellBack) {
+            fellBack = true;
+            speak(raw, onDone);
+          }
         };
+        if (a.error) {
+          delete audioCache[rel];
+          return speak(raw, onDone);
+        }
+        if (typeof onDone === 'function') a.addEventListener('ended', onDone, { once: true });
         a.addEventListener('error', fallback, { once: true });
         try { a.currentTime = 0; } catch (e) { /* ignore */ }
         const p = a.play();
@@ -751,7 +829,7 @@
         /* به گفتار مرورگر برمی‌گردیم */
       }
     }
-    return speak(raw);
+    return speak(raw, onDone);
   }
 
   /* ---------------------------------------------------------
@@ -855,11 +933,28 @@
   }
 
   /* درس‌هایی که صدای توضیح دارند (audio/lessons/{id}.mp3) */
-    const LESSON_AUDIO = [
+  const LESSON_AUDIO = [
     'm1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12',
     's1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11', 's12',
     'f0', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10', 'f11', 'f12', 'f13', 'f14'
   ];
+
+  /* هدفِ هر درس صدای جداگانه دارد (audio/objectives/{id}.mp3) */
+  const OBJECTIVE_AUDIO = [].concat(CURRICULUM.math, CURRICULUM.farsi, CURRICULUM.science)
+    .map(l => l.id);
+
+  function objectiveAudioRel(id) {
+    return OBJECTIVE_AUDIO.indexOf(id) !== -1 ? 'objectives/' + id : '';
+  }
+
+  function lessonObjectiveAudioHTML(lesson, opts) {
+    const o = opts || {};
+    return `<button class="${o.cls || 'obj-audio'}" data-act="speak"
+      data-text="${escapeHtml(lesson.objective || '')}"
+      data-audio="${objectiveAudioRel(lesson.id)}"
+      title="شنیدن هدف درس"
+      aria-label="شنیدن هدف درس: ${escapeHtml(lesson.objective || '')}">${icon('speaker')}${o.label ? ' <span>' + escapeHtml(o.label) + '</span>' : ''}</button>`;
+  }
 
   function lessonAudioHTML(lesson) {
     if (LESSON_AUDIO.indexOf(lesson.id) === -1) return '';
@@ -1350,16 +1445,19 @@
       const p = state.progress.lessons[l.id];
       const done = p && p.done;
       return `
-      <button class="lesson-card reveal ${done ? 'is-done' : ''} ${LESSON_IMAGES.indexOf(l.id) !== -1 ? 'has-img' : ''}" data-act="lesson" data-lesson="${l.id}">
+      <article class="lesson-card reveal ${done ? 'is-done' : ''} ${LESSON_IMAGES.indexOf(l.id) !== -1 ? 'has-img' : ''}" data-act="lesson" data-lesson="${l.id}" role="button" tabindex="0" aria-label="شروع درس ${escapeHtml(l.title)}">
         ${lessonImg(l.id, { cls: 'lesson-thumb' })}
         <div class="lesson-meta">
           <span class="num-badge">${faDigits(i + 1)}</span>
           <span class="chip ${done ? 'is-done' : ''}">${done ? icon('check') + ' تکمیل‌شده' : faDigits(l.minutes || 8) + ' دقیقه'}</span>
         </div>
         <h3>${escapeHtml(l.title)}</h3>
-        <p>${escapeHtml(l.objective)}</p>
+        <div class="lesson-obj-row">
+          <p>${escapeHtml(l.objective)}</p>
+          ${lessonObjectiveAudioHTML(l, { cls: 'obj-audio card-obj-audio' })}
+        </div>
         <div class="act-link">شروع درس ${icon('arrow-left')}</div>
-      </button>`;
+      </article>`;
     }).join('');
 
     const subjectTabs = Object.keys(SUBJECTS).map(sid => `
@@ -1474,7 +1572,7 @@
           <h1 class="t-heading">${escapeHtml(lesson.title)}</h1>
           <div class="objective-banner">
             ${icon('target')} <span>هدف یادگیری: ${escapeHtml(lesson.objective)}</span>
-            <button class="obj-audio" data-act="speak" data-text="${escapeHtml(lesson.objective)}" data-audio="lessons/${lesson.id}" title="شنیدن هدف درس" aria-label="شنیدن هدف درس">${icon('speaker')}</button>
+            ${lessonObjectiveAudioHTML(lesson)}
           </div>
           <div class="lesson-audio-row">${lessonAudioHTML(lesson)}</div>
         </header>
@@ -1583,7 +1681,7 @@
         <div class="teach-steps">${figs}</div>
         <div class="stage-actions">
           <button class="btn btn-primary" data-act="step-next">${icon('play')} برویم سراغ تمرین</button>
-          <button class="audio-btn" data-act="speak" data-text="${escapeHtml(lesson.objective)}">${icon('speaker')} <span>شنیدن هدف درس</span></button>
+          ${lessonObjectiveAudioHTML(lesson, { cls: 'audio-btn', label: 'شنیدن هدف درس' })}
         </div>
       </article>`;
   }
@@ -1732,7 +1830,11 @@
       <article class="activity-card is-focus reveal" id="activity-card">
         <div class="act-prompt">
           <span class="bubble" aria-hidden="true">${icon('question')}</span>
-          <span>${escapeHtml(prompt)}</span>
+          <span class="act-prompt-text">${escapeHtml(prompt)}</span>
+          <button class="audio-btn mini act-speak" data-act="speak"
+            data-text="${escapeHtml(prompt)}"
+            data-audio="${questionAudioRel(prompt)}"
+            title="شنیدن صورت سؤال" aria-label="شنیدن صورت سؤال: ${escapeHtml(prompt)}">${icon('speaker')}</button>
         </div>
         ${body}
         <div id="feedback-slot" class="live-region" aria-live="polite"></div>
@@ -2119,13 +2221,16 @@
       const p = state.progress.lessons[l.id];
       const done = p && p.done;
       return `
-              <button class="lesson-card ${done ? 'is-done' : ''}" data-act="lesson" data-lesson="${l.id}">
+              <article class="lesson-card ${done ? 'is-done' : ''}" data-act="lesson" data-lesson="${l.id}" role="button" tabindex="0" aria-label="شروع درس ${escapeHtml(l.title)}">
                 <div class="lesson-meta">
                   <span class="chip ${done ? 'is-done' : ''}">${done ? icon('check') + ' تکمیل‌شده' : 'شروع‌نشده'}</span>
                 </div>
                 <h3>${escapeHtml(l.title)}</h3>
-                <p>${escapeHtml(l.objective)}</p>
-              </button>`;
+                <div class="lesson-obj-row">
+                  <p>${escapeHtml(l.objective)}</p>
+                  ${lessonObjectiveAudioHTML(l, { cls: 'obj-audio card-obj-audio' })}
+                </div>
+              </article>`;
     }).join('')}
           </div>
         </div>
@@ -2281,7 +2386,7 @@
     role: 'وکیل پایه یک دادگستری',
     credit: 'این برنامه با حمایت مالیِ سرکار خانم لیلا آبکه، وکیل پایه یک دادگستری، ساخته شده است.',
     audience: 'ویژه‌ی پایه‌ی اولِ دبستان شهید قاسمی',
-    dedication: 'تقدیم به دبستان شهید قاسمی مهرگان'
+    dedication: 'تقدیم دانش‌آموزان شهدای میناب'
   };
 
   /* کارتِ حامی — صفحه‌ی خانه */
@@ -2835,6 +2940,12 @@
     if (ev.key === 'Enter' && ev.target && ev.target.id === 'gate-input') {
       const btn = document.querySelector('[data-act="gate-check"]');
       if (btn) btn.click();
+    }
+    /* کارت‌های درس با کیبورد هم باز می‌شوند */
+    if ((ev.key === 'Enter' || ev.key === ' ') && ev.target
+      && ev.target.matches && ev.target.matches('[role="button"][data-act="lesson"]')) {
+      ev.preventDefault();
+      ev.target.click();
     }
   });
 
