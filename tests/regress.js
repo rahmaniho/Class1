@@ -77,6 +77,30 @@ const CURR = (() => { const g = {}; eval(dataJs + ';g.m=CURRICULUM.math;g.f=CURR
   nav('#/');
   ok(!!doc.querySelector('.sponsor-card'), 'کارتِ حامی روی صفحه‌ی خانه هست');
 
+  console.log('\nآموزشِ گام‌به‌گام هر درس:');
+  let richLessons = 0, teachSteps = 0, visualLessons = 0;
+  const VISUAL = ['objects', 'letters', 'story', 'equation', 'numline', 'tenframe',
+    'placevalue', 'pattern', 'shapes', 'compare', 'clock', 'living', 'plant', 'beanjar',
+    'animals', 'seasons', 'weather', 'shadow', 'sound', 'materials', 'safety', 'senses'];
+  for (const sub of ['m', 'f', 's']) {
+    for (const l of CURR[sub]) {
+      const steps = l.teach || [];
+      teachSteps += steps.length;
+      if (steps.length >= 4) richLessons++;
+      if (steps.some(t => VISUAL.indexOf(t.kind) !== -1)) visualLessons++;
+    }
+  }
+  ok(richLessons === 39, `همه‌ی ۳۹ درس دست‌کم چهار گامِ آموزش دارند (${richLessons})`);
+  ok(teachSteps >= 150, `مجموع گام‌های آموزش ${teachSteps} است`);
+  ok(visualLessons === 39, `هر درس دست‌کم یک گامِ تصویری دارد (${visualLessons})`);
+  nav('#/lesson/m1');
+  ok(doc.querySelectorAll('.teach-step-block').length === 4, 'گام‌های آموزش به شکل کارت‌های جدا نمایش داده می‌شوند');
+  ok(!!doc.querySelector('.teach-step-block svg'), 'کارت‌های آموزش تصویر دارند');
+  const allAudio = doc.querySelector('.lesson-audio');
+  ok(!!allAudio && allAudio.dataset.audio === 'lessons/m1', 'دکمه‌ی شنیدنِ همه‌ی آموزش به فایلِ درس وصل است');
+  const sayChars = doc.querySelector('.lesson-audio').dataset.text.length;
+  ok(sayChars > 180, `متنِ گفتارِ درس کامل است (${sayChars} نویسه)`);
+
   console.log('\nویدیو و صدا:');
   const ids = ((appJs.match(/LESSON_AUDIO = \[([\s\S]*?)\]/) || [])[1] || '').match(/'[a-z]\d+'/g) || [];
   ok(ids.length === 39, `صدای هدف برای ۳۹ درس تعریف شده (${ids.length})`);
