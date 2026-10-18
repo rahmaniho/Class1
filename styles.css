@@ -2039,3 +2039,53 @@ img, svg { -webkit-user-drag: none; user-select: none; -webkit-touch-callout: no
   font-weight: 800;
 }
 .dl-version svg { width: 16px; height: 16px; flex: none; }
+
+/* نشانِ نصب از مرورگر (PWA) */
+.install-state-chip { flex-wrap: wrap; }
+.install-cta {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-blue);
+  border: 2px solid var(--ink);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-sm);
+}
+.install-cta-badge {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+.install-cta-badge svg { width: 28px; height: 28px; }
+.install-cta-copy { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.install-cta-copy h2 { margin: 0; }
+.install-cta-copy p { margin: 0; }
+.install-cta-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.install-cta-actions .btn { text-decoration: none; }
+.install-warn {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border: 2px dashed var(--coral);
+  border-radius: 12px;
+  background: #FFF3F0;
+  font-size: 14px;
+  line-height: 1.9;
+  color: var(--ink);
+}
+.install-warn svg { width: 16px; height: 16px; vertical-align: -3px; }
+@media (max-width: 780px) {
+  .install-cta { grid-template-columns: auto minmax(0, 1fr); }
+  .install-cta-actions { grid-column: 1 / -1; }
+}
+@media (max-width: 480px) {
+  .install-cta { grid-template-columns: minmax(0, 1fr); }
+  .install-cta-badge { display: none; }
+}
