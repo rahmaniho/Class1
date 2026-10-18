@@ -39,5 +39,49 @@
       "type": "image/png",
       "purpose": "any"
     }
+  ],
+  "id": "./",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "درس‌های ریاضی",
+      "short_name": "ریاضی",
+      "url": "./#/lessons/math",
+      "icons": [
+        {
+          "src": "images/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "بازی و تمرین",
+      "short_name": "بازی",
+      "url": "./#/games",
+      "icons": [
+        {
+          "src": "images/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "پیشرفت من",
+      "short_name": "پیشرفت",
+      "url": "./#/progress",
+      "icons": [
+        {
+          "src": "images/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }

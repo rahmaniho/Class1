@@ -1132,6 +1132,8 @@
           ${artImg('hero', { eager: true, alt: ART.hero.alt })}
         </figure>
 
+        ${installBannerHTML()}
+
         <section class="section" aria-label="موضوع‌ها">
           <div class="section-head">
             <h2 class="t-heading">جزیره‌ی درس‌ها</h2>
@@ -2522,6 +2524,22 @@
         </div>
       </article>`;
 
+    const browser = card({
+      icon: 'download',
+      title: 'نصب نسخه‌ی وب (از مرورگر)',
+      lead: isInstalled()
+        ? 'این برنامه روی همین دستگاه نصب است؛ اگر روی دستگاه دیگری هستی، همین صفحه را آنجا باز کن.'
+        : 'بدون فایل نصبی: همین سایت را مثل یک برنامه نصب کن؛ آیکونش روی صفحه‌ی اصلی می‌آید و آفلاین هم باز می‌شود.',
+      steps: installSteps(),
+      actions: isInstalled()
+        ? `<button class="btn btn-primary" data-act="modal-close">برنامه نصب است</button>`
+        : `<button class="btn btn-primary" data-act="install-now">${icon('download')} ${installMode() === 'ready' ? 'نصب برنامه' : 'راهنمای نصب'}</button>
+           <span class="dl-version install-state-chip">${installStateChip()}</span>`,
+      note: isSecureOrigin()
+        ? 'بیشترین پشتیبانی: Chrome و Edge روی اندروید و رایانه، Safari روی آیفون (از منوی اشتراک‌گذاری).'
+        : 'این صفحه با https باز نشده است؛ برای نصب، نشانی امن را باز کن: https://class1.karen-soft.ir'
+    });
+
     const android = card({
       icon: 'phone',
       title: 'نسخه‌ی اندروید (APK)',
@@ -2587,6 +2605,7 @@
               <h1 class="t-display">مدرسه‌ی من را همیشه همراهت داشته باش</h1>
               <p class="t-body measure">یک‌بار نصب کن؛ بعد از آن درس‌ها، تمرین‌ها، صداها و تصویرها حتی بدون اینترنت کار می‌کنند.</p>
               <p class="dl-version">${icon('check')} آخرین نسخه: ${RELEASE_VERSION} — آماده‌ی دانلود</p>
+              <p class="dl-version install-state-chip">${installStateChip()}</p>
             </div>
             <figure class="img-frame page-hero-art install-hero">
               ${artImg('appIcon', { eager: true, fallback: shareArrowSVG(), fallbackDisplay: 'flex', alt: 'آیکونِ برنامه‌ی مدرسه‌ی من' })}
@@ -2594,6 +2613,7 @@
           </div>
         </header>
 
+        <section class="section" aria-label="نصب نسخه‌ی وب">${browser}</section>
         <section class="section" aria-label="نسخه‌ی اندروید">${android}</section>
         <section class="section" aria-label="نسخه‌ی آیفون و آی‌پد">${ios}</section>
         <section class="section" aria-label="نسخه‌ی رایانه">${desktop}</section>
@@ -2725,6 +2745,122 @@
       (navigator.platform === 'MacIntel' && (navigator.maxTouchPoints || 0) > 1);
   }
 
+  /* داخلِ نسخه‌ی اندروید/iOS (Capacitor) نصب از مرورگر معنا ندارد */
+  function isNativeShell() {
+    const c = window.Capacitor;
+    if (!c) return false;
+    try {
+      if (typeof c.isNativePlatform === 'function') return !!c.isNativePlatform();
+      return !!c.platform && c.platform !== 'web';
+    } catch (e) { return false; }
+  }
+
+  function isInstalled() {
+    return isStandalone() || isNativeShell();
+  }
+
+  function isSecureOrigin() {
+    if (typeof window.isSecureContext === 'boolean') return window.isSecureContext;
+    return location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  }
+
+  function browserKind() {
+    const ua = navigator.userAgent || '';
+    if (/SamsungBrowser/i.test(ua)) return 'samsung';
+    if (/Firefox|FxiOS/i.test(ua)) return 'firefox';
+    if (/Edg\//i.test(ua)) return 'edge';
+    if (/Chrome|CriOS|Chromium/i.test(ua)) return 'chrome';
+    if (/Safari/i.test(ua)) return 'safari';
+    return 'other';
+  }
+
+  /* ready = مرورگر دکمه‌ی نصبِ خودکار می‌دهد · ios = راهنمای Safari · manual = از منوی مرورگر */
+  function installMode() {
+    if (isInstalled()) return 'installed';
+    if (deferredInstall) return 'ready';
+    if (isIOS()) return 'ios';
+    return 'manual';
+  }
+
+  function installSteps() {
+    const mode = installMode();
+    if (mode === 'ios') {
+      return [
+        'این صفحه را در <strong>Safari</strong> باز کن (اگر در مرورگر دیگری هستی، نشانی را در Safari بگذار).',
+        'دکمه‌ی <strong>اشتراک‌گذاری</strong> (مربع با فلشِ رو به بالا) را بزن.',
+        'در فهرست، <strong>Add to Home Screen</strong> (افزودن به صفحه‌ی اصلی) را انتخاب کن و <strong>Add</strong> را بزن.'
+      ];
+    }
+    if (mode === 'ready') {
+      return [
+        'دکمه‌ی <strong>نصب برنامه</strong> را بزن.',
+        'در پنجره‌ی مرورگر، <strong>نصب</strong> را تأیید کن.',
+        'آیکونِ «مدرسه‌ی من» روی صفحه‌ی اصلی یا میزکار می‌آید.'
+      ];
+    }
+    const kind = browserKind();
+    if (kind === 'samsung') {
+      return [
+        'منوی سه‌خطِ مرورگر (پایین یا بالا) را باز کن.',
+        '<strong>Add page to</strong> و بعد <strong>Home screen</strong> را انتخاب کن.',
+        'نامِ «مدرسه‌ی من» را تأیید کن تا آیکون ساخته شود.'
+      ];
+    }
+    if (kind === 'firefox') {
+      return [
+        'منوی سه‌نقطه‌ی مرورگر را باز کن.',
+        '<strong>Install</strong> یا <strong>Add to Home screen</strong> را انتخاب کن.',
+        'اگر گزینه‌ی نصب نبود، از منوی مرورگر صفحه را به صفحه‌ی اصلی اضافه کن.'
+      ];
+    }
+    if (kind === 'chrome' || kind === 'edge' || kind === 'other') {
+      return [
+        'اگر آیکونِ <strong>نصب</strong> (مانیتور با فلش یا ⊕) در نوار نشانی است، همان را بزن.',
+        'وگرنه منوی سه‌نقطه‌ی مرورگر را باز کن و <strong>«نصب برنامه» / Install app</strong> یا <strong>«افزودن به صفحه‌ی اصلی»</strong> را انتخاب کن.',
+        'نامِ «مدرسه‌ی من» را تأیید کن تا آیکون ساخته شود.'
+      ];
+    }
+    return [
+      'منوی مرورگر را باز کن.',
+      'گزینه‌ی <strong>«نصب برنامه»</strong> یا <strong>«افزودن به صفحه‌ی اصلی»</strong> را انتخاب کن.',
+      'نامِ «مدرسه‌ی من» را تأیید کن تا آیکون ساخته شود.'
+    ];
+  }
+
+  function installStepsHTML() {
+    return `<ol class="dl-steps">${installSteps().map(t => `<li>${t}</li>`).join('')}</ol>`;
+  }
+
+  function installStateChip() {
+    const mode = installMode();
+    if (mode === 'installed') return `${icon('check')} نصب‌شده روی این دستگاه`;
+    if (mode === 'ready') return `${icon('check')} آماده‌ی نصب در این مرورگر`;
+    if (mode === 'ios') return `${icon('phone')} نصب با «افزودن به صفحه‌ی اصلی»`;
+    return `${icon('lightbulb')} نصب از منوی مرورگر`;
+  }
+
+  function installBannerHTML() {
+    if (isInstalled()) return '';
+    const mode = installMode();
+    const lead = mode === 'ready'
+      ? 'با یک ضربه نصب می‌شود؛ آیکونش کنارِ بقیه‌ی برنامه‌ها می‌آید و بدونِ مرورگر باز می‌شود.'
+      : mode === 'ios'
+        ? 'در Safari دکمه‌ی اشتراک‌گذاری را بزن و «افزودن به صفحه‌ی اصلی» را انتخاب کن.'
+        : 'از منوی مرورگر، «نصب برنامه» یا «افزودن به صفحه‌ی اصلی» را انتخاب کن.';
+    return `
+      <section class="install-cta reveal" aria-label="نصب برنامه">
+        <span class="install-cta-badge" aria-hidden="true">${icon('download')}</span>
+        <div class="install-cta-copy">
+          <h2 class="t-sub">مدرسه‌ی من را روی دستگاهت نصب کن</h2>
+          <p class="t-label">${lead}</p>
+        </div>
+        <div class="install-cta-actions">
+          <button class="btn btn-primary" data-act="install-now">${icon('download')} ${mode === 'ready' ? 'نصب برنامه' : 'راهنمای نصب'}</button>
+          <button class="btn btn-quiet" data-act="nav" data-hash="#/install">جزئیات نصب</button>
+        </div>
+      </section>`;
+  }
+
   function installDismissedRecently() {
     try {
       const ts = Number(localStorage.getItem(INSTALL_KEY) || 0);
@@ -2736,22 +2872,30 @@
     try { localStorage.setItem(INSTALL_KEY, String(Date.now())); } catch (e) {}
   }
 
+  function refreshInstallUI() {
+    if (state.route.view === 'home' || state.route.view === 'install') render();
+  }
+
   window.addEventListener('beforeinstallprompt', (ev) => {
     ev.preventDefault();
     deferredInstall = ev;
     /* اگر مودال نصب الان باز است، نسخه‌ی دکمه‌دار را جایگزین کن */
     const open = document.getElementById('modal-root');
     if (open && open.querySelector('#install-title')) openInstallModal();
+    else refreshInstallUI();
     scheduleInstallOffer();
   });
 
   window.addEventListener('appinstalled', () => {
     deferredInstall = null;
     closeModal();
+    refreshInstallUI();
   });
 
   function scheduleInstallOffer() {
-    if (isStandalone() || installDismissedRecently()) return;
+    if (isInstalled() || installDismissedRecently()) return;
+    /* برای مرورگرهایی که دکمه‌ی نصبِ خودکار ندارند، فقط دعوت‌نامه‌ی آرامِ خانه را نشان می‌دهیم */
+    if (installMode() === 'manual') return;
     if (installOfferTimer) return;
     installOfferTimer = setTimeout(() => {
       installOfferTimer = null;
@@ -2766,22 +2910,22 @@
     wrap.className = 'modal-backdrop';
     wrap.id = 'modal-root';
     let title, body;
-    if (isStandalone()) {
+    const mode = installMode();
+    const secureWarn = isSecureOrigin() ? '' : `
+      <p class="install-warn">${icon('question')} برای نصب، صفحه باید با نشانی <strong>https</strong> باز شود. اگر با http باز کرده‌ای، نشانی امن را باز کن: <span dir="ltr">https://class1.karen-soft.ir</span></p>`;
+    if (mode === 'installed') {
       title = 'برنامه نصب شده است';
       body = `
         <p class="t-body">مدرسه‌ی من روی همین دستگاه نصب است و از صفحه‌ی اصلی باز می‌شود.</p>
         <div class="stage-actions"><button class="btn btn-primary" data-act="modal-close">باشه</button></div>`;
-    } else if (isIOS()) {
+    } else if (mode === 'ios') {
       title = 'مدرسه‌ی من را روی آیفون نصب کن';
       body = `
-        <p class="t-body">برای نصب روی آیفون یا آیپد:</p>
-        <ul style="display:flex;flex-direction:column;gap:8px;margin:12px 0">
-          <li class="t-label" style="line-height:2">۱. روی دکمه‌ی <strong>اشتراک‌گذاری</strong> (مربع با فلش) بزن.</li>
-          <li class="t-label" style="line-height:2">۲. گزینه‌ی <strong>Add to Home Screen</strong> را انتخاب کن.</li>
-          <li class="t-label" style="line-height:2">۳. دکمه‌ی <strong>Add</strong> را بزن.</li>
-        </ul>
+        <p class="t-body">روی آیفون و آیپد، برنامه از Safari به صفحه‌ی اصلی اضافه می‌شود:</p>
+        ${installStepsHTML()}
+        ${secureWarn}
         <div class="stage-actions"><button class="btn btn-primary" data-act="install-dismiss">متوجه شدم</button></div>`;
-    } else if (deferredInstall) {
+    } else if (mode === 'ready') {
       title = 'مدرسه‌ی من را نصب کن';
       body = `
         <p class="t-body">با نصب برنامه، از صفحه‌ی اصلی گوشی یا کامپیوتر بازش کن و بدون مرورگر ادامه بده — حتی آفلاین!</p>
@@ -2790,10 +2934,15 @@
           <button class="btn btn-quiet" data-act="install-dismiss">بعداً</button>
         </div>`;
     } else {
-      title = 'مدرسه‌ی من را نصب کن';
+      title = 'نصب از مرورگر';
       body = `
-        <p class="t-body">برای نصب «مدرسه‌ی من»، در مرورگر خود گزینه‌ی «نصب برنامه» یا «افزودن به صفحه‌ی اصلی» را از منوی مرورگر انتخاب کن.</p>
-        <div class="stage-actions"><button class="btn btn-primary" data-act="install-dismiss">باشه</button></div>`;
+        <p class="t-body">مرورگر تو دکمه‌ی نصبِ خودکار ندارد؛ با این روش‌ها هم می‌توانی «مدرسه‌ی من» را مثل یک برنامه نصب کنی:</p>
+        ${installStepsHTML()}
+        ${secureWarn}
+        <div class="stage-actions">
+          <button class="btn btn-primary" data-act="install-dismiss">متوجه شدم</button>
+          <button class="btn btn-quiet" data-act="nav" data-hash="#/install">صفحه‌ی نصب</button>
+        </div>`;
     }
     wrap.innerHTML = `
       <div class="modal" role="dialog" aria-modal="true" aria-labelledby="install-title">
@@ -2842,9 +2991,10 @@
   }
 
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
-    });
+    /* هرچه زودتر ثبت شود، مرورگر زودتر شرایطِ نصب را کامل می‌بیند */
+    try {
+      navigator.serviceWorker.register('sw.js', { scope: './', updateViaCache: 'none' }).catch(() => {});
+    } catch (e) { /* مرورگرهای قدیمی */ }
   }
   window.addEventListener('load', () => {
     scheduleInstallOffer();

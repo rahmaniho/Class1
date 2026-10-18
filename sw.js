@@ -2,7 +2,7 @@
    مدرسه‌ی من — Service Worker
    کش هسته + کش ران‌تایم برای کار آفلاین پس از نصب
    ========================================================= */
-const CACHE = 'madrese-man-v4';
+const CACHE = 'madrese-man-v5';
 
 const CORE = [
   './',

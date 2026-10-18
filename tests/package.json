@@ -3,7 +3,7 @@
   "private": true,
   "description": "آزمون‌های خودکارِ «مدرسه‌ی من» — فعالیت‌ها، متن‌ها، چیدمان، حامی، ویدیو و صدا",
   "scripts": {
-    "test": "node regress.js && node layout-test.js && node download-test.js && node icon-test.js && node dist-test.js && node removal-test.js && node android-icon-test.js"
+    "test": "node regress.js && node layout-test.js && node download-test.js && node install-test.js && node icon-test.js && node dist-test.js && node removal-test.js && node android-icon-test.js"
   },
   "devDependencies": {
     "jsdom": "^24.0.0"

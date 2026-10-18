@@ -60,7 +60,7 @@ const ok = (c, n) => { if (c) { pass++; console.log('  ✓ ' + n); } else { fail
   const text = main.textContent.replace(/\s+/g, ' ');
   ok(/مدرسه‌ی من را همیشه همراهت داشته باش/.test(text), 'عنوانِ صفحه‌ی دانلود نمایش داده می‌شود');
   const cards = doc.querySelectorAll('.dl-card');
-  ok(cards.length === 4, 'چهار کارت (اندروید، آیفون، رایانه، بسته‌ی کامل) ساخته شد (' + cards.length + ')');
+  ok(cards.length === 5, 'پنج کارت (وب، اندروید، آیفون، رایانه، بسته‌ی کامل) ساخته شد (' + cards.length + ')');
   ok(/نسخه‌ی اندروید/.test(text), 'بخشِ اندروید هست');
   ok(/آیفون و آی‌پد/.test(text), 'بخشِ آیفون هست');
   ok(/افزودن به صفحه‌ی اصلی/.test(text), 'راهنمای نصب روی آیفون هست');
