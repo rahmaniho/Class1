@@ -2491,7 +2491,7 @@
      نما: دانلود و نصب
      --------------------------------------------------------- */
   const RELEASES_PAGE = 'https://github.com/rahmaniho/Class1/releases';
-  const RELEASE_VERSION = '۱٫۰٫۰';
+  const RELEASE_VERSION = '۱٫۱٫۰';
   const APK_URL = 'https://github.com/rahmaniho/Class1/releases/latest/download/madrese-man-android.apk';
   const ZIP_URL = 'https://github.com/rahmaniho/Class1/releases/latest/download/madrese-man-web.zip';
 
