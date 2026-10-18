@@ -73,7 +73,7 @@ const CURR = (() => { const g = {}; eval(dataJs + ';g.m=CURRICULUM.math;g.f=CURR
   ok((css.match(/\{/g) || []).length === (css.match(/\}/g) || []).length, 'آکولادهای CSS متوازن‌اند');
   nav('#/lesson/m1');
   const bt = (doc.querySelector('.foot-note + .dedi-block') || { textContent: '' }).textContent.replace(/\s+/g, ' ');
-  ok(bt.includes('تقدیم به دبستان شهید قاسمی مهرگان') && bt.includes('لیلا آبکه'), 'تقدیم و حامی زیرِ فوترِ صفحه‌ی درس هست');
+  ok(bt.includes('تقدیم دانش‌آموزان شهدای میناب') && bt.includes('لیلا آبکه'), 'تقدیم و حامی زیرِ فوترِ صفحه‌ی درس هست');
   nav('#/');
   ok(!!doc.querySelector('.sponsor-card'), 'کارتِ حامی روی صفحه‌ی خانه هست');
 
@@ -82,11 +82,22 @@ const CURR = (() => { const g = {}; eval(dataJs + ';g.m=CURRICULUM.math;g.f=CURR
   ok(ids.length === 39, `صدای هدف برای ۳۹ درس تعریف شده (${ids.length})`);
   let files = 0; try { files = fs.readdirSync(ROOT + '/audio/lessons').filter(f => f.endsWith('.mp3')).length; } catch (e) { }
   ok(files === 39, `۳۹ فایلِ صوتی در audio/lessons است (${files})`);
+  let objFiles = []; try { objFiles = fs.readdirSync(ROOT + '/audio/objectives').filter(f => f.endsWith('.mp3')); } catch (e) { }
+  ok(objFiles.length === 39, `۳۹ فایلِ صوتی برای هدفِ درس‌ها هست (${objFiles.length})`);
+  ok(objFiles.every(f => fs.statSync(ROOT + '/audio/objectives/' + f).size > 1500), 'فایل‌های هدفِ درس خالی نیستند');
+  let qFiles = []; try { qFiles = fs.readdirSync(ROOT + '/audio/questions').filter(f => f.endsWith('.mp3')); } catch (e) { }
+  ok(qFiles.length >= 100, `صوتِ پرسش‌ها ساخته شده است (${qFiles.length} فایل)`);
+  nav('#/lesson/m1');
+  ok(!!doc.querySelector('.objective-banner .obj-audio[data-audio="objectives/m1"]'), 'دکمه‌ی صوتیِ هدف در صفحه‌ی درس به فایلِ اختصاصی وصل است');
+  doc.querySelectorAll('.step-item')[1].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  ok(!!doc.querySelector('#activity-card .act-speak[data-audio^="questions/q-"]'), 'هر پرسش دکمه‌ی شنیدن دارد');
+  nav('#/lessons/math');
+  ok(!!doc.querySelector('.lesson-card[role="button"] .card-obj-audio[data-audio="objectives/m1"]'), 'کارتِ درس هم دکمه‌ی صوتیِ هدف دارد');
   ok(/aparat\.com\/api\/fa\/v1\/video\/video\/show\/videohash/.test(appJs), 'مسیرِ مستقیمِ ویدیو از API ی آپارات خوانده می‌شود');
   ok(/video-native/.test(appJs) && /vt\/frame/.test(appJs), 'هر دو مسیرِ پخشِ داخلی برقرار است');
   const opens = (appJs.match(/window\.open/g) || []).length;
   ok(opens <= 1 && /if \(v\.short\)[\s\S]{0,120}window\.open/.test(appJs), 'باز شدنِ بیرونی فقط برای ویدیوی کوتاه است');
-  ok(html.includes('لیلا آبکه') && html.includes('تقدیم به دبستان شهید قاسمی مهرگان'), 'اسپلش حامی و تقدیم را دارد');
+  ok(html.includes('لیلا آبکه') && html.includes('تقدیم دانش‌آموزان شهدای میناب'), 'اسپلش حامی و تقدیم را دارد');
 
   console.log(`\nRESULT: ${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

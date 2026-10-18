@@ -555,8 +555,23 @@ ul { margin: 0; padding: 0; list-style: none; }
   text-align: start;
   color: var(--ink);
   min-height: 210px;
+  width: 100%;
+  font-family: inherit;
+  font-size: inherit;
   transition: transform 150ms ease-out, box-shadow 150ms ease-out;
 }
+.lesson-card:focus-visible {
+  outline: 3px solid var(--blue, #4D9BE6);
+  outline-offset: 3px;
+}
+.lesson-obj-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1;
+}
+.lesson-obj-row p { flex: 1; margin: 0; }
+.card-obj-audio { margin-top: 2px; background: var(--surface-blue); }
 .lesson-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
 .lesson-card.is-done { background: var(--surface-mint); }
 .lesson-card .num-badge {
@@ -761,6 +776,8 @@ ul { margin: 0; padding: 0; list-style: none; }
   display: inline-flex; align-items: center; justify-content: center;
 }
 .act-prompt .bubble svg { width: 28px; height: 28px; }
+.act-prompt-text { flex: 1; min-width: 0; }
+.act-prompt .act-speak { margin-inline-start: auto; flex: none; }
 
 .objects-board {
   display: flex;
